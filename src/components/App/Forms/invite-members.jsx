@@ -3,13 +3,20 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const InviteMembers = () => {
   const [emails, setEmails] = useState([""]);
-
+  const route = useRouter();
   const handleEmailChange = (index, value) => {
     const updated = [...emails];
     updated[index] = value;
@@ -39,24 +46,32 @@ const InviteMembers = () => {
   const handleSkip = () => {
     toast.info("Skipped inviting members.");
     // redirect to /home or next page
+    route.push("/dashboard");
   };
 
   return (
     <div className="max-w-xl mx-auto mt-12 px-4">
       <form onSubmit={handleSubmit}>
-        <Card className=" w-[350px]">
+        <Card className="w-[350px]">
           <CardHeader>
             <CardTitle>Invite team members</CardTitle>
+            <CardDescription>
+              Invite your teammates to help manage invoices, customers, and
+              settings.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="p-6 space-y-4">
+          <CardContent className=" space-y-2">
             {emails.map((email, index) => (
               <div
                 key={index}
                 className="flex redd items-end justify-end  gap-2"
               >
                 <div className="flex-1">
-                  <Label>Email</Label>
+                  <Label htmlFor="email" className="pl-1">
+                    Email
+                  </Label>
                   <Input
+                    id="email"
                     type="email"
                     placeholder="email@example.com"
                     value={email}

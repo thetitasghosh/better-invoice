@@ -14,9 +14,9 @@ const CreateTeam = () => {
   return (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>Create a Teams</CardTitle>
-        <CardDescription hidden>
-          Deploy your new project in one-click.
+        <CardTitle>Create a Team</CardTitle>
+        <CardDescription >
+          Your team will help manage invoices and customers collaboratively.
         </CardDescription>
       </CardHeader>
       <CardContent>
