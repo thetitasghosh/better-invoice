@@ -1,4 +1,5 @@
 import React from "react";
+import { TeamsCreateAction } from "@/app/actions";
 import {
   Card,
   CardContent,
@@ -15,23 +16,21 @@ const CreateTeam = () => {
     <Card className="w-[350px]">
       <CardHeader>
         <CardTitle>Create a Team</CardTitle>
-        <CardDescription >
+        <CardDescription>
           Your team will help manage invoices and customers collaboratively.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form>
+        <form action={TeamsCreateAction}>
           <div className="grid w-full items-center gap-4">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="ex:Acme Inc." />
+              <Input id="name" name="name" placeholder="ex:Acme Inc." />
             </div>
+            <SubmitButton label={"Create"} className={"w-full"} />
           </div>
         </form>
       </CardContent>
-      <CardFooter className="flex justify-between w-full">
-        <SubmitButton label={"Create"} className={"w-full"} />
-      </CardFooter>
     </Card>
   );
 };

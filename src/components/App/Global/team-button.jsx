@@ -18,11 +18,20 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { getTeamData } from "@/app/actions";
 
 export function TeamSwitcher({ teams }) {
   const { isMobile } = useSidebar();
   const [activeTeam, setActiveTeam] = React.useState(teams[0]);
+  const [teamName, setTeamName] = React.useState("");
 
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const team = await getTeamData();
+      setTeamName(team.name);
+    };
+    fetchData();
+  }, []);
   if (!activeTeam) {
     return null;
   }
@@ -40,9 +49,7 @@ export function TeamSwitcher({ teams }) {
                 <activeTeam.logo className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
-                  {activeTeam.name}
-                </span>
+                <span className="truncate font-semibold">{teamName}</span>
                 {/* <span className="truncate text-xs">{activeTeam.plan}</span> */}
               </div>
               <ChevronsUpDown className="ml-auto" />

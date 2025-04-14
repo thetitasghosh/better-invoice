@@ -1,8 +1,14 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/App/Global/app-sidebar";
 import Header from "@/components/App/Global/header";
+import { getUserData } from "@/app/actions";
+import { redirect } from "next/navigation";
 
-export default function Layout({ children }) {
+export default async function Layout({ children }) {
+  const user = await getUserData();
+  if (!user) {
+    redirect("/auth/login");
+  }
   return (
     <SidebarProvider>
       <AppSidebar />
