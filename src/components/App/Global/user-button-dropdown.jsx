@@ -34,8 +34,8 @@ import Link from "next/link";
 
 export function UserButtonDropDown({ children }) {
   return (
-    <DropdownMenu >
-      <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
+    <DropdownMenu>
+      <DropdownMenuTrigger>{children}</DropdownMenuTrigger>
       <DropdownMenuContent className="w-56 mr-2">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />

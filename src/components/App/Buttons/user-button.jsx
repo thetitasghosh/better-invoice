@@ -1,6 +1,6 @@
 "use client";
-import React, { use, useEffect, useState } from "react";
-import { Button } from "../../ui/button";
+import React, { useEffect, useState } from "react";
+// import { Button } from "../../ui/button";
 import { getUserData } from "@/app/actions";
 import { getEmailInitial } from "@/lib/utils";
 const UserButton = () => {
@@ -14,9 +14,9 @@ const UserButton = () => {
   }, []);
 
   return (
-    <Button variant={""} size={"icon"}>
-      {getEmailInitial(name)}
-    </Button>
+    <div className="redd size-9 flex items-center justify-center rounded-md font-semibold bg-neutral-200">
+      {name && getEmailInitial(name)}
+    </div>
   );
 };
 

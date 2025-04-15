@@ -15,3 +15,17 @@ export async function getCustomers() {
 
   return data;
 }
+export async function getInvoices() {
+  const sp = await createClient();
+  const team = await getTeamData();
+  const { data, error } = await sp
+    .from("invoices")
+    .select("*")
+    .eq("team_id", team.id);
+  if (error) {
+    console.error("Error fetching team:", error.message);
+    return null;
+  }
+
+  return data;
+}
