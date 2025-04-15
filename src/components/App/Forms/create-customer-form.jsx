@@ -99,7 +99,7 @@ const CreateCustomerForm = ({ children, closeRef }) => {
             <Label htmlFor="tax_id" className="pl-1">
               Tax ID / VAT Number
             </Label>
-            <Input id="tax_id" name="tax-id" placeholder="Enter VAT number" />
+            <Input id="tax_id" name="tax_id" placeholder="Enter VAT number" />
           </div>
           <div id="form-slot" className="w-full">
             <Label htmlFor="note" className="pl-1">
