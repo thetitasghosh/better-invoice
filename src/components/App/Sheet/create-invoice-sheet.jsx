@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -9,12 +10,14 @@ import {
 } from "../../ui/sheet";
 import { Button } from "@/components/ui/button";
 import Icon from "../Global/Icon";
-import DefaultInvoiceDoc from "@/components/App/Invoices/default-invoice";
+import DefaultInvoiceTemplate from "@/components/App/Invoices/default-invoice-form";
+import CancelButton from "../Buttons/cancel-button";
+import SubmitButton from "../Buttons/submit-button";
 const CreateInvoiceSheet = ({ children }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="min-w-[35rem] p-1 pb-10 ">
+      <SheetContent className="min-w-[35rem] p-1 pb-24 ">
         <SheetHeader>
           {/* <SheetTitle hidden>Are you absolutely sure?</SheetTitle>
           <SheetDescription hidden>
@@ -28,7 +31,15 @@ const CreateInvoiceSheet = ({ children }) => {
           </div>
         </SheetHeader>
         <div id="invoice-view" className="size-full redd ">
-          <DefaultInvoiceDoc />
+          <DefaultInvoiceTemplate>
+            <SheetClose>
+              <CancelButton />
+            </SheetClose>
+            {/* <SheetClose hidden>
+              <button ref={closeRef} disabled={closeRef} />
+            </SheetClose> */}
+            <SubmitButton label={"Create"} />
+          </DefaultInvoiceTemplate>
         </div>
       </SheetContent>
     </Sheet>
