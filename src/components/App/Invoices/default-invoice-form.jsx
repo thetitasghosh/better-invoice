@@ -274,10 +274,10 @@ function SelectCustomer({ open, setOpen, customers, value, setValue }) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[200px] text-sm justify-between"
         >
           {value
             ? customers.find((customer) => customer.name === value)?.name

@@ -7,7 +7,8 @@ export async function getCustomers() {
   const { data, error } = await sp
     .from("customers")
     .select("*")
-    .eq("team_id", team.id);
+    .eq("team_id", team.id)
+    .order("created_at", { ascending: false });
   if (error) {
     console.error("Error fetching team:", error.message);
     return null;
@@ -21,7 +22,8 @@ export async function getInvoices() {
   const { data, error } = await sp
     .from("invoices")
     .select("*")
-    .eq("team_id", team.id);
+    .eq("team_id", team.id)
+    .order("created_at", { ascending: false });
   if (error) {
     console.error("Error fetching team:", error.message);
     return null;

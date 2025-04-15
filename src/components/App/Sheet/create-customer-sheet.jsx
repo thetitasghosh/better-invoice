@@ -27,7 +27,7 @@ const CreateCustomerSheet = ({ children }) => {
               <CancelButton />
             </SheetClose>
             <SheetClose hidden>
-              <button ref={closeRef} disabled={closeRef} />
+              <button ref={closeRef} type="button" />
             </SheetClose>
             <SubmitButton label={"Create"} />
           </CreateCustomerForm>
