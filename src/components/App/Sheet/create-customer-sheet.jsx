@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useRef } from "react";
 import {
   Sheet,
   SheetContent,
@@ -10,8 +11,9 @@ import {
 } from "../../ui/sheet";
 import CreateCustomerForm from "@/components/App/Forms/create-customer-form";
 import CancelButton from "@/components/App/Buttons/cancel-button";
-import CreateButton from "@/components/App/Buttons/create-submit";
+import SubmitButton from "@/components/App/Buttons/submit-button";
 const CreateCustomerSheet = ({ children }) => {
+  const closeRef = useRef(null);
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
@@ -20,11 +22,14 @@ const CreateCustomerSheet = ({ children }) => {
           <SheetTitle className="capitalize">create customer</SheetTitle>
         </SheetHeader>
         <div id="customer-view" className="size-full redd ">
-          <CreateCustomerForm>
+          <CreateCustomerForm closeRef={closeRef}>
             <SheetClose>
               <CancelButton />
             </SheetClose>
-            <CreateButton />
+            <SheetClose hidden>
+              <button ref={closeRef} />
+            </SheetClose>
+            <SubmitButton label={"Create"} />
           </CreateCustomerForm>
         </div>
       </SheetContent>
