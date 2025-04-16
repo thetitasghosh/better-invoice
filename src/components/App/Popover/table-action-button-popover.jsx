@@ -1,8 +1,8 @@
-"use client";
 import React from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
 import { Button } from "@/components/ui/button";
 import AlertDeleteDialog from "@/components/App/Dialogs/delete-alert-dialog";
+import ViewInvoiceSheet from "@/components/App/Sheet/view-invoice-sheet";
 const TableActionButtonPopover = ({ children, table, id }) => {
   return (
     <Popover>
@@ -15,7 +15,11 @@ const TableActionButtonPopover = ({ children, table, id }) => {
           Edit
         </Button>
         <Button className="w-full" variant={"outline"} size={"sm"}>
-          View
+          {table === "invoices" ? (
+            <ViewInvoiceSheet id={id}> View</ViewInvoiceSheet>
+          ) : (
+            "View"
+          )}
         </Button>
         <AlertDeleteDialog table={table} id={id}>
           <Button

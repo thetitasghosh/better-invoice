@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DeleteData } from "@/app/actions";
 
-
 function SubmitDeleteButton({ table, id }) {
   const deleteAction = DeleteData.bind(null, table, id);
   return (
@@ -31,7 +30,7 @@ export default function DeleteAlertDialog({ children, table, id }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="">
         <form>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
