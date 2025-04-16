@@ -8,11 +8,27 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getCustomers } from "@/data/getDatas";
+import CreateCustomerSheet from "../Sheet/create-customer-sheet";
 import TableActionButton from "@/components/App/Buttons/table-action-button";
 
 export default async function CustomerTable() {
   const customers = await getCustomers();
-  // console.log("customers", customers);
+  if (customers.length <= 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="size-80 flex-col flex items-center justify-center gap-2">
+          <h1 className="font-semibold text-lg">No customers</h1>
+          <p className="text-sm">
+            You haven&apos;t created any customers yet. <br />
+            Go ahead and create your first one.
+          </p>
+          <CreateCustomerSheet>
+            <Button variant={"outline"}>Create customer</Button>
+          </CreateCustomerSheet>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

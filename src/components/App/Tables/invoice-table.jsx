@@ -7,55 +7,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format } from "date-fns";
+import CreateInvoiceSheet from "../Sheet/create-invoice-sheet";
 import { getInvoices } from "@/data/getDatas";
 import TableActionButton from "@/components/App/Buttons/table-action-button";
+import { Button } from "@/components/ui/button";
 
 export default async function InvoiceTable() {
   const invoices = await getInvoices();
-  // console.log("customers", customers);
-  // const invoices = [
-  //   {
-  //     id: "1",
-  //     customer: "Your Maker",
-  //     status: "draft",
-  //     due_date: "April,30",
-  //     invoice_date: "April,15",
-  //     invoice_no: "INV_10001",
-  //     amount: "7500",
-  //     recurring: "one time",
-  //   },
-  //   {
-  //     id: "2",
-  //     customer: "Anubit Technologies",
-  //     status: "paid",
-  //     due_date: "April,21",
-  //     invoice_date: "April,15",
-  //     invoice_no: "INV_10002",
-  //     amount: "1500",
-  //     recurring: "monthly",
-  //   },
-  //   {
-  //     id: "3",
-  //     customer: "Exelth B2B",
-  //     status: "overdue",
-  //     due_date: "April,21",
-  //     invoice_date: "April,15",
-  //     invoice_no: "INV_10003",
-  //     amount: "5000",
-  //     recurring: "annually",
-  //   },
-  //   {
-  //     id: "4",
-  //     customer: "Egostix ",
-  //     status: "send",
-  //     due_date: "April,21",
-  //     invoice_date: "April,15",
-  //     invoice_no: "INV_10004",
-  //     amount: "1500",
-  //     recurring: "annually",
-  //   },
-  // ];
+  if (invoices.length <= 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="size-80 flex-col flex items-center justify-center gap-2">
+          <h1 className="font-semibold text-lg">No invoices</h1>
+          <p className="text-sm">
+            You haven&apos;t created any invoices yet. <br />
+            Go ahead and create your first one.
+          </p>
+          <CreateInvoiceSheet>
+            <Button variant={"outline"}>Create invoice</Button>
+          </CreateInvoiceSheet>
+        </div>
+      </div>
+    );
+  }
   return (
     <div>
       <div className="bg-background overflow-hidden rounded-md border">
