@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useRef } from "react";
 import {
   Sheet,
   SheetClose,
@@ -14,6 +15,7 @@ import DefaultInvoiceTemplate from "@/components/App/Invoices/default-invoice-fo
 import CancelButton from "../Buttons/cancel-button";
 import SubmitButton from "../Buttons/submit-invoice-button";
 const CreateInvoiceSheet = ({ children }) => {
+  const closeRef = useRef(null);
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
@@ -31,13 +33,13 @@ const CreateInvoiceSheet = ({ children }) => {
           </div>
         </SheetHeader>
         <div id="invoice-view" className="size-full redd ">
-          <DefaultInvoiceTemplate>
+          <DefaultInvoiceTemplate closeRef={closeRef}>
             <SheetClose>
               <CancelButton />
             </SheetClose>
-            {/* <SheetClose hidden>
-              <button ref={closeRef} type='button' disabled={closeRef} />
-            </SheetClose> */}
+            <SheetClose hidden>
+              <button ref={closeRef} type="button" disabled={closeRef} />
+            </SheetClose>
             <SubmitButton label={"Create"} />
           </DefaultInvoiceTemplate>
         </div>

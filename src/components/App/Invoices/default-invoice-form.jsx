@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/utils/supabase/client";
 import { Check, ChevronDown, Plus } from "lucide-react";
 import {
   Popover,
@@ -24,7 +25,8 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import Image from "next/image";
-const DefaultInvoiceTemplate = ({ children }) => {
+import { getTeamData } from "@/app/actions";
+const DefaultInvoiceTemplate = ({ children, closeRef }) => {
   const [invoiceNumber, setInvoiceNumber] = useState("INV-0001");
   const [issueDate, setIssueDate] = useState(Date.now());
   const [dueDate, setDueDate] = useState(Date.now());
@@ -38,6 +40,8 @@ const DefaultInvoiceTemplate = ({ children }) => {
   const [value, setValue] = React.useState("");
   const [customers, setCustomers] = useState([]);
   const [from, setFrom] = useState("");
+  const [teamId, setTeamID] = useState("");
+  const [customerID, setCustomerID] = useState("");
   const FileRef = useRef(null);
   const [invoiceData, setInvoiceData] = useState({
     invoiceNumber: invoiceNumber,
@@ -57,7 +61,9 @@ const DefaultInvoiceTemplate = ({ children }) => {
   useEffect(() => {
     const FetchData = async () => {
       const data = await getCustomers();
+      const team = await getTeamData();
       setCustomers(data);
+      setTeamID(team.id);
     };
     FetchData();
   }, []);
@@ -146,7 +152,7 @@ const DefaultInvoiceTemplate = ({ children }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    const sp = createClient();
     // Basic validation (optional but recommended)
     if (!invoiceData.customer || invoiceData.items.length === 0) {
       toast.error(
@@ -155,14 +161,14 @@ const DefaultInvoiceTemplate = ({ children }) => {
       return;
     }
 
-    const finalData = {
-      ...invoiceData,
-      total: calculateTotal(),
-    };
+    // const finalData = {
+    //   ...invoiceData,
+    //   total: calculateTotal(),
+    // };
 
     try {
       // Log to console
-      console.log("🧾 Submitting Invoice Data:", finalData);
+      // console.log("🧾 Submitting Invoice Data:", finalData);
 
       // Toast the preview
       // toast.info(
@@ -173,10 +179,32 @@ const DefaultInvoiceTemplate = ({ children }) => {
       // );
 
       // Simulate API call
+      const { error } = await sp.from("invoices").insert([
+        {
+          team_id: teamId,
+          customer_id: customerID,
+          issue_date: format(issueDate, "PP"),
+          due_date: format(dueDate, "PP"),
+          customer: value, // name or label
+          amount: calculateTotal(),
+          recurring: "once", // or you can support recurring logic later
+          items: items, // already JSON
+          tax_rate: taxRate,
+          invoice_no: invoiceNumber,
+          invoice_logo: logoUrl,
+          payment_deatils: paymentDetails,
+          note: note,
+          from: from,
+          status: "draft", // default status
+        },
+      ]);
       // await sendInvoiceToAPI(finalData);
-
+      if (error) {
+        toast.error(error.message);
+      }
       // Success
       toast.success("Invoice submitted successfully!");
+      closeRef.current?.click(); // Close Sheet
     } catch (error) {
       console.error("Error submitting invoice:", error);
       toast.error("Failed to submit invoice. Please try again.");
@@ -278,6 +306,7 @@ const DefaultInvoiceTemplate = ({ children }) => {
                         customers={customers}
                         value={value}
                         setValue={setValue}
+                        setCustomerID={setCustomerID}
                       />
                     </span>
                   </div>
@@ -406,7 +435,14 @@ const DefaultInvoiceTemplate = ({ children }) => {
 
 export default DefaultInvoiceTemplate;
 
-function SelectCustomer({ open, setOpen, customers, value, setValue }) {
+function SelectCustomer({
+  open,
+  setOpen,
+  customers,
+  value,
+  setValue,
+  setCustomerID,
+}) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -456,6 +492,7 @@ function SelectCustomer({ open, setOpen, customers, value, setValue }) {
                   value={customer.name}
                   onSelect={(customerName) => {
                     setValue(customerName === value ? "" : customerName);
+                    setCustomerID(customer.id);
                     setOpen(false);
                   }}
                 >
@@ -478,7 +515,7 @@ function SelectCustomer({ open, setOpen, customers, value, setValue }) {
 function SelecIssueDate({ children, IssueDate, setIssueDate, format }) {
   return (
     <Popover>
-      <PopoverTrigger>
+      <PopoverTrigger name="issue_date">
         {IssueDate ? format(IssueDate, "PP") : children}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
@@ -495,7 +532,7 @@ function SelecIssueDate({ children, IssueDate, setIssueDate, format }) {
 function SelecDueDate({ children, DueDate, setDueDate, format }) {
   return (
     <Popover>
-      <PopoverTrigger>
+      <PopoverTrigger name="due_date">
         {DueDate ? format(DueDate, "PP") : children}
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">

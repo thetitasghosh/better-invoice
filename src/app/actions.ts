@@ -134,3 +134,4 @@ export async function CreateCustomerAction(prevState: any, formData: FormData) {
   }
   revalidatePath("/dashboard/customers", "page");
 }
+export async function CtreateInoiceAction(prevState: any, formData: FormData) {}
