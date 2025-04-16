@@ -12,7 +12,7 @@ export async function getUserData() {
   return user;
 }
 
-export async function LogInAction(formData: FormData) {
+export async function LogInAction(prevState: any, formData: FormData) {
   const sp = await createClient();
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -21,12 +21,17 @@ export async function LogInAction(formData: FormData) {
     password: password,
   });
   if (error) {
-    redirect("/auth/error");
+    // redirect("/auth/error");
+    return {
+      error: {
+        message: error.message,
+      },
+    };
   }
   revalidatePath("/", "layout");
   redirect("/dashboard");
 }
-export async function SignUpAction(formData: FormData) {
+export async function SignUpAction(prevState: any, formData: FormData) {
   const sp = await createClient();
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -35,9 +40,12 @@ export async function SignUpAction(formData: FormData) {
     password: password,
   });
   if (error) {
-    console.log(error.message);
-
-    redirect("/auth/error");
+    // redirect("/auth/error");
+    return {
+      error: {
+        message: error.message,
+      },
+    };
   }
   revalidatePath("/", "layout");
   redirect("/teams/create");
