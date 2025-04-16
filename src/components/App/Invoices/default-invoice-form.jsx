@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Check, ChevronDown, Plus } from "lucide-react";
 import {
@@ -20,13 +20,14 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { getCustomers } from "@/data/getDatas";
-import { Sevillana } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
 const DefaultInvoiceTemplate = ({ children }) => {
   const [invoiceNumber, setInvoiceNumber] = useState("INV-0001");
-  const [issueDate, setIssueDate] = useState("10/05/2023");
-  const [dueDate, setDueDate] = useState("10/05/2023");
+  const [issueDate, setIssueDate] = useState(Date.now());
+  const [dueDate, setDueDate] = useState(Date.now());
   const [items, setItems] = useState([]);
+  const [total, setTotal] = useState(0);
   const [taxRate, setTexRate] = useState(25);
   const [file, setFile] = useState(null);
   const [logoUrl, setLogoUrl] = useState("");
@@ -80,11 +81,13 @@ const DefaultInvoiceTemplate = ({ children }) => {
   };
 
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateTax();
+    const totals = calculateSubtotal() + calculateTax();
+    // setTotal(totals);
+    return totals;
   };
 
   const formatCurrency = (amount) => {
-    return `$${amount.toFixed(0)}`;
+    return `₹${amount.toFixed(0)}`;
   };
   return (
     <div className="size-full bg-neutral-100 overflow-y-scroll hideScrollbar">
@@ -109,10 +112,23 @@ const DefaultInvoiceTemplate = ({ children }) => {
                     </p>
                     <p>
                       Issue Date:{" "}
-                      <span className="font-semibold">{issueDate}</span>
+                      <SelecIssueDate
+                        IssueDate={issueDate}
+                        setIssueDate={setIssueDate}
+                        format={format}
+                      >
+                        <span className="font-semibold">{issueDate}</span>
+                      </SelecIssueDate>
                     </p>
                     <p>
-                      Due Date: <span className="font-semibold">{dueDate}</span>
+                      Due Date:{" "}
+                      <SelecDueDate
+                        DueDate={dueDate}
+                        setDueDate={setDueDate}
+                        format={format}
+                      >
+                        <span className="font-semibold">{dueDate}</span>
+                      </SelecDueDate>
                     </p>
                   </div>
                 </div>
@@ -126,7 +142,7 @@ const DefaultInvoiceTemplate = ({ children }) => {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <p className="mb-2">From</p>
-                  <div className="bg-neutral-300  h-28 ">
+                  <div className="bg-neutral-300  h-32 ">
                     <Textarea
                       className="bg-transparent text-sm rounded-none border-none h-full resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
                       placeholder=""
@@ -136,7 +152,7 @@ const DefaultInvoiceTemplate = ({ children }) => {
                 </div>
                 <div>
                   <p className="mb-2">To</p>
-                  <div className="bg  h-28 ">
+                  <div className="bg  h-32 ">
                     {/* <Textarea
                       className="bg-transparent rounded-none  text-sm border-none h-full resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
                       placeholder="Select customer"
@@ -280,7 +296,29 @@ function SelectCustomer({ open, setOpen, customers, value, setValue }) {
           className="w-[200px] text-sm justify-between"
         >
           {value
-            ? customers.find((customer) => customer.name === value)?.name
+            ? (() => {
+                const customer = customers.find(
+                  (customer) => customer.name === value
+                );
+                return customer ? (
+                  <div
+                    className="flex flex-col items-start justify-center text-black"
+                    key={customer.id || customer.name}
+                  >
+                    {" "}
+                    {/* Use a unique key */}
+                    <span className="font-bold capitalize">
+                      {customer.name}
+                    </span>
+                    <span>{customer.contact_person}</span>
+                    <span>{customer.email}</span>
+                    <span>{customer.phone}</span>
+                    <span>{customer.address}</span>
+                  </div>
+                ) : (
+                  "Customer not found"
+                );
+              })()
             : "Select customer..."}
           {/* <ChevronsUpDown className="opacity-50" /> */}
         </Button>
@@ -312,6 +350,40 @@ function SelectCustomer({ open, setOpen, customers, value, setValue }) {
             </CommandGroup>
           </CommandList>
         </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+function SelecIssueDate({ children, IssueDate, setIssueDate, format }) {
+  return (
+    <Popover>
+      <PopoverTrigger>
+        {IssueDate ? format(IssueDate, "PP") : children}
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0">
+        <Calendar
+          mode="single"
+          selected={IssueDate}
+          onSelect={setIssueDate}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+function SelecDueDate({ children, DueDate, setDueDate, format }) {
+  return (
+    <Popover>
+      <PopoverTrigger>
+        {DueDate ? format(DueDate, "PP") : children}
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0">
+        <Calendar
+          mode="single"
+          selected={DueDate}
+          onSelect={setDueDate}
+          initialFocus
+        />
       </PopoverContent>
     </Popover>
   );

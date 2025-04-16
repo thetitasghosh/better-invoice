@@ -17,7 +17,7 @@ const CreateInvoiceSheet = ({ children }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent className="min-w-[35rem] p-1 pb-24 ">
+      <SheetContent className="min-w-[40rem] p-1 pb-24 ">
         <SheetHeader>
           {/* <SheetTitle hidden>Are you absolutely sure?</SheetTitle>
           <SheetDescription hidden>
