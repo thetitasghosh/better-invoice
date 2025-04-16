@@ -22,19 +22,37 @@ import {
 import { getCustomers } from "@/data/getDatas";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
+import { toast } from "sonner";
+import Image from "next/image";
 const DefaultInvoiceTemplate = ({ children }) => {
   const [invoiceNumber, setInvoiceNumber] = useState("INV-0001");
   const [issueDate, setIssueDate] = useState(Date.now());
   const [dueDate, setDueDate] = useState(Date.now());
   const [items, setItems] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [note, setNote] = useState("");
+  const [paymentDetails, setPaymentDetails] = useState("");
   const [taxRate, setTexRate] = useState(25);
   const [file, setFile] = useState(null);
   const [logoUrl, setLogoUrl] = useState("");
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState("");
   const [customers, setCustomers] = useState([]);
+  const [from, setFrom] = useState("");
   const FileRef = useRef(null);
+  const [invoiceData, setInvoiceData] = useState({
+    invoiceNumber: invoiceNumber,
+    invoiceLogo: logoUrl,
+    issueDate: format(issueDate, "PP"),
+    dueDate: format(dueDate, "PP"),
+    customer: null, // or { name, contact_person, email, phone, address }
+    from: from,
+    paymentDetails: paymentDetails,
+    note: note,
+    items: items,
+    taxRate: taxRate,
+    total: 0,
+  });
+  // console.log("invoice Data", invoiceData);
 
   useEffect(() => {
     const FetchData = async () => {
@@ -43,6 +61,41 @@ const DefaultInvoiceTemplate = ({ children }) => {
     };
     FetchData();
   }, []);
+  const handleInvoiceLogo = (event) => {
+    const selectedFile = event.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile); // ✅ SET FILE HERE
+      const preview = URL.createObjectURL(selectedFile);
+      setLogoUrl(preview);
+    }
+  };
+  useEffect(() => {
+    setInvoiceData({
+      invoiceNumber,
+      invoiceLogo: logoUrl,
+      issueDate: format(issueDate, "PP"),
+      dueDate: format(dueDate, "PP"),
+      customer: value,
+      from, // you can hook this up from the "From" textarea later
+      paymentDetails,
+      note,
+      items,
+      taxRate,
+      total: "",
+    });
+  }, [
+    logoUrl,
+    invoiceNumber,
+    issueDate,
+    dueDate,
+    value,
+    paymentDetails,
+    note,
+    items,
+    taxRate,
+    from,
+  ]);
+
   const addItem = () => {
     const newItem = {
       id: Date.now(),
@@ -52,24 +105,25 @@ const DefaultInvoiceTemplate = ({ children }) => {
       total: 0,
     };
     setItems([...items, newItem]);
+    // setInvoiceData((prev) => ({
+    //   ...prev.items,
+    //   items: newItem,
+    // }));
   };
 
   const updateItem = (id, field, value) => {
-    setItems(
-      items.map((item) => {
-        if (item.id === id) {
-          const updatedItem = { ...item, [field]: value };
-
-          // Recalculate total if quantity or price changes
-          if (field === "quantity" || field === "price") {
-            updatedItem.total = updatedItem.quantity * updatedItem.price;
-          }
-
-          return updatedItem;
+    const updatedItems = items.map((item) => {
+      if (item.id === id) {
+        const updatedItem = { ...item, [field]: value };
+        if (field === "quantity" || field === "price") {
+          updatedItem.total = updatedItem.quantity * updatedItem.price;
         }
-        return item;
-      })
-    );
+        return updatedItem;
+      }
+      return item;
+    });
+
+    setItems(updatedItems);
   };
 
   const calculateSubtotal = () => {
@@ -82,17 +136,58 @@ const DefaultInvoiceTemplate = ({ children }) => {
 
   const calculateTotal = () => {
     const totals = calculateSubtotal() + calculateTax();
-    // setTotal(totals);
+    // setInvoiceData((prev) => ({ ...prev.total, total: totals }));
     return totals;
   };
 
   const formatCurrency = (amount) => {
     return `₹${amount.toFixed(0)}`;
   };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Basic validation (optional but recommended)
+    if (!invoiceData.customer || invoiceData.items.length === 0) {
+      toast.error(
+        "Please select a customer and add at least one invoice item."
+      );
+      return;
+    }
+
+    const finalData = {
+      ...invoiceData,
+      total: calculateTotal(),
+    };
+
+    try {
+      // Log to console
+      console.log("🧾 Submitting Invoice Data:", finalData);
+
+      // Toast the preview
+      // toast.info(
+      //   "Invoice Data Preview:\n" + JSON.stringify(finalData, null, 2),
+      //   {
+      //     duration: 8000,
+      //   }
+      // );
+
+      // Simulate API call
+      // await sendInvoiceToAPI(finalData);
+
+      // Success
+      toast.success("Invoice submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting invoice:", error);
+      toast.error("Failed to submit invoice. Please try again.");
+    }
+  };
+
   return (
     <div className="size-full bg-neutral-100 overflow-y-scroll hideScrollbar">
       <form
-        action=""
+        // action=""
+        onSubmit={handleSubmit}
         className="flex flex-col items-center justify-center gap-2"
       >
         <div className="w-full max-w-4xl  text-black border-none">
@@ -135,7 +230,24 @@ const DefaultInvoiceTemplate = ({ children }) => {
                 <div
                   id="invoice-logo"
                   className="size-32  bg-neutral-300"
-                ></div>
+                  onClick={() => FileRef.current.click()}
+                >
+                  {logoUrl && (
+                    <Image
+                      src={logoUrl}
+                      alt=""
+                      width={500}
+                      height={500}
+                      className="size-full object-cover"
+                    />
+                  )}
+                  <input
+                    type="file"
+                    ref={FileRef}
+                    hidden
+                    onChange={handleInvoiceLogo}
+                  />
+                </div>
               </div>
 
               {/* From/To Section */}
@@ -144,8 +256,9 @@ const DefaultInvoiceTemplate = ({ children }) => {
                   <p className="mb-2">From</p>
                   <div className="bg-neutral-300  h-32 ">
                     <Textarea
-                      className="bg-transparent text-sm rounded-none border-none h-full resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                      className="bg-transparent focus:bg-neutral-100 bg-neutral-300 shadow-none text-sm rounded-none border-none h-full resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
                       placeholder=""
+                      onChange={(e) => setFrom(e.target.value)}
                       rows={4}
                     />
                   </div>
@@ -184,8 +297,10 @@ const DefaultInvoiceTemplate = ({ children }) => {
                   <div key={item.id} className="grid grid-cols-12 gap-4 mb-2">
                     <div className="col-span-6">
                       <Input
-                        className="bg-neutral-300 rounded-none border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        type="text"
+                        className=" capitalize shadow-none   focus:bg-neutral-100 bg-neutral-300 rounded-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 "
                         value={item.description}
+                        // placeholder="type"
                         onChange={(e) =>
                           updateItem(item.id, "description", e.target.value)
                         }
@@ -193,7 +308,7 @@ const DefaultInvoiceTemplate = ({ children }) => {
                     </div>
                     <div className="col-span-2">
                       <Input
-                        className="bg-neutral-300 border-none rounded-none text-center focus-visible:ring-0 focus-visible:ring-offset-0"
+                        className="bg-neutral-300 capitalize shadow-none focus:bg-neutral-100 border-none rounded-none text-center focus-visible:ring-0 focus-visible:ring-offset-0"
                         type="number"
                         value={item.quantity || ""}
                         onChange={(e) =>
@@ -207,7 +322,7 @@ const DefaultInvoiceTemplate = ({ children }) => {
                     </div>
                     <div className="col-span-2">
                       <Input
-                        className="bg-neutral-300 rounded-none border-none text-center focus-visible:ring-0 focus-visible:ring-offset-0"
+                        className="bg-neutral-300 capitalize shadow-none focus:bg-neutral-100 rounded-none border-none text-center focus-visible:ring-0 focus-visible:ring-offset-0"
                         type="number"
                         value={item.price || ""}
                         onChange={(e) =>
@@ -229,7 +344,7 @@ const DefaultInvoiceTemplate = ({ children }) => {
                 <Button
                   variant="ghost"
                   type="button"
-                  className="mt-2 text-zinc-500 hover:text-white hover:bg-neutral-800 gap-0"
+                  className="mt-2 text-zinc-500 hover:text-white hover:bg-neutral-800 gap-0 rounded-none"
                   onClick={addItem}
                 >
                   <Plus className="h-4 w-4 mr-2" /> Add Item
@@ -262,11 +377,17 @@ const DefaultInvoiceTemplate = ({ children }) => {
               <div className="grid grid-cols-2 gap-6 mt-6">
                 <div>
                   <Label className="mb-2 block">Payment Details</Label>
-                  <Textarea className="bg-neutral-300 rounded-none border-none h-24 resize-none focus-visible:ring-0 focus-visible:ring-offset-0" />
+                  <Textarea
+                    onChange={(e) => setPaymentDetails(e.target.value)}
+                    className="focus:bg-neutral-100 bg-neutral-300 shadow-none rounded-none border-none h-24 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
                 </div>
                 <div>
                   <Label className="mb-2 block">Note</Label>
-                  <Textarea className="bg-neutral-300 rounded-none border-none h-24 resize-none focus-visible:ring-0 focus-visible:ring-offset-0" />
+                  <Textarea
+                    onChange={(e) => setNote(e.target.value)}
+                    className="focus:bg-neutral-100 bg-neutral-300 shadow-none rounded-none border-none h-24 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
                 </div>
               </div>
             </div>

@@ -22,6 +22,8 @@ const badgeVariants = cva(
           "border border-yellow-200 bg-yellow-100 text-yellow-700 hover:bg-yellow-200",
         overdue:
           "border border-red-300 bg-red-100 text-red-700 hover:bg-red-200",
+        send:
+          "border border-blue-300 bg-blue-100 text-blue-700 hover:bg-blue-200",
       },
     },
     defaultVariants: {

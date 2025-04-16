@@ -47,7 +47,7 @@ export default async function InvoiceTable() {
     {
       id: "4",
       customer: "Egostix ",
-      status: "unpaid",
+      status: "send",
       due_date: "April,21",
       invoice_date: "April,15",
       invoice_no: "INV_10004",

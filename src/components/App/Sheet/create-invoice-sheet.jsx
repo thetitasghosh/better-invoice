@@ -12,18 +12,18 @@ import { Button } from "@/components/ui/button";
 import Icon from "../Global/Icon";
 import DefaultInvoiceTemplate from "@/components/App/Invoices/default-invoice-form";
 import CancelButton from "../Buttons/cancel-button";
-import SubmitButton from "../Buttons/submit-button";
+import SubmitButton from "../Buttons/submit-invoice-button";
 const CreateInvoiceSheet = ({ children }) => {
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="min-w-[40rem] p-1 pb-24 ">
         <SheetHeader>
-          {/* <SheetTitle hidden>Are you absolutely sure?</SheetTitle>
+          <SheetTitle hidden>Are you absolutely sure?</SheetTitle>
           <SheetDescription hidden>
             This action cannot be undone. This will permanently delete your
             account and remove your data from our servers.
-          </SheetDescription> */}
+          </SheetDescription>
           <div className="w-full rded flex items-center justify-end">
             <Button size={"icon"} variant={"ghost"} className="[&_svg]:size-5">
               <Icon.GripVertical />
@@ -36,7 +36,7 @@ const CreateInvoiceSheet = ({ children }) => {
               <CancelButton />
             </SheetClose>
             {/* <SheetClose hidden>
-              <button ref={closeRef} disabled={closeRef} />
+              <button ref={closeRef} type='button' disabled={closeRef} />
             </SheetClose> */}
             <SubmitButton label={"Create"} />
           </DefaultInvoiceTemplate>
