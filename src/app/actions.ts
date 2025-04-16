@@ -135,3 +135,15 @@ export async function CreateCustomerAction(prevState: any, formData: FormData) {
   revalidatePath("/dashboard/customers", "page");
 }
 export async function CtreateInoiceAction(prevState: any, formData: FormData) {}
+
+export async function DeleteData(table: string, id: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from(table).delete().eq("id", id);
+
+  if (error) {
+    console.error("Failed to delete data:", error.message);
+  }
+
+  revalidatePath("/dashboard", "layout");
+}

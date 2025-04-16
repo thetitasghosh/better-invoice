@@ -47,28 +47,29 @@ export default async function InvoiceTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invoices.map((customer) => (
+            {invoices.map((invoice) => (
               <TableRow
-                key={customer.id}
+                key={invoice.id}
                 className="*:border-border [&>:not(:last-child)]:border-r"
               >
                 <TableCell className="py-2 font-medium">
-                  {customer.due_date}
+                  {invoice.due_date}
                 </TableCell>
                 <TableCell className="py-2 text-center">
-                  <Badge variant={customer.status} className="capitalize">
-                    {customer.status}
+                  <Badge variant={invoice.status} className="capitalize">
+                    {invoice.status}
                   </Badge>
                 </TableCell>
-                <TableCell className="py-2">{customer.customer}</TableCell>
-                <TableCell className="py-2">{customer.amount}</TableCell>
-                <TableCell className="py-2">{customer.issue_date}</TableCell>
-                <TableCell className="py-2">{customer.invoice_no}</TableCell>
+                <TableCell className="py-2">{invoice.customer}</TableCell>
+                <TableCell className="py-2">{invoice.amount}</TableCell>
+                <TableCell className="py-2">{invoice.issue_date}</TableCell>
+                <TableCell className="py-2">{invoice.invoice_no}</TableCell>
                 <TableCell className="py-2 capitalize">
-                  {customer.recurring}
+                  {invoice.recurring}
                 </TableCell>
                 <TableCell className="py-2 text-center">
-                  <TableActionButton />
+                  <TableActionButton table={"invoices"} id={invoice.id} />
+                  
                 </TableCell>
               </TableRow>
             ))}

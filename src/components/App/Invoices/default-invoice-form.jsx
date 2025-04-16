@@ -203,6 +203,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
         toast.error(error.message);
       }
       // Success
+      
       toast.success("Invoice submitted successfully!");
       closeRef.current?.click(); // Close Sheet
     } catch (error) {

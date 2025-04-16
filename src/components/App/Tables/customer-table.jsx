@@ -64,7 +64,7 @@ export default async function CustomerTable() {
                 <TableCell className="py-2">{customer.address}</TableCell>
                 <TableCell className="py-2">{customer.tax_id}</TableCell>
                 <TableCell className="py-2 text-center">
-                  <TableActionButton />
+                  <TableActionButton table={"customers"} id={customer.id} />
                 </TableCell>
               </TableRow>
             ))}
