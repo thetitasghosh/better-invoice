@@ -38,7 +38,7 @@ const CreateInvoiceSheet = ({ children }) => {
               <CancelButton />
             </SheetClose>
             <SheetClose hidden>
-              <button ref={closeRef} type="button" disabled={closeRef} />
+              <button ref={closeRef} type="button"  />
             </SheetClose>
             <SubmitButton label={"Create"} />
           </DefaultInvoiceTemplate>

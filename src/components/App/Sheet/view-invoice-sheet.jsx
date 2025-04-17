@@ -12,15 +12,27 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
-import { getInvoices } from "@/data/getDatas";
+import { getCustomers, getInvoices } from "@/data/getDatas";
+import { getTeamData } from "@/app/actions";
 
 const ViewInvoiceSheet = async ({ children, id }) => {
   const invoice = await getInvoices();
-  const INV = invoice.find((inv) => inv.id === id);
+  const customer = await getCustomers();
+  const team = await getTeamData();
+
+  const INVOICE = invoice.find((inv) => inv.id === id);
+  const CUSTOMER = customer.find((cus) => cus.id === INVOICE.customer_id);
+  const calculateSubtotal = () => {
+    return INVOICE.items.reduce((sum, item) => sum + item.total, 0);
+  };
+  const calculateTax = () => {
+    return calculateSubtotal() * (INVOICE.tax_rate / 100);
+  };
+
   return (
     <Sheet>
       <SheetTrigger>{children}</SheetTrigger>
-      <SheetContent className="min-w-[40rem] p-1 pb-24 ">
+      <SheetContent className="min-w-[40rem] p-1  ">
         <SheetHeader>
           <SheetTitle hidden>Are you absolutely sure?</SheetTitle>
           <SheetDescription hidden>
@@ -48,14 +60,20 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                           <p>
                             Invoice No:{" "}
                             <span className="font-semibold">
-                              {INV.invoice_no}
+                              {INVOICE.invoice_no}
                             </span>
                           </p>
                           <p>
-                            Issue Date: <span className="font-semibold"></span>
+                            Issue Date:{" "}
+                            <span className="font-semibold">
+                              {INVOICE.issue_date}
+                            </span>
                           </p>
                           <p>
-                            Due Date: <span className="font-semibold">{}</span>
+                            Due Date:{" "}
+                            <span className="font-semibold">
+                              {INVOICE.due_date}
+                            </span>
                           </p>
                         </div>
                       </div>
@@ -80,25 +98,33 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                     <div className="grid grid-cols-2 gap-6">
                       <div>
                         <p className="mb-2">From</p>
-                        <div className="  h-32 ">
-                          <Textarea
-                            className="bg-transparent focus:bg-neutral-100  shadow-none text-sm rounded-none border-none h-full resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                            placeholder=""
-                            value={""}
-                            // onChange={(e) => setFrom(e.target.value)}
-                            rows={4}
-                          />
-                        </div>
+                        {team.team_company.map((company, i) => {
+                          return (
+                            <div
+                              key={i}
+                              className=" flex text-sm text-black redd flex-col items-start justify-start   h-32 "
+                            >
+                              <span className="font-bold capitalize">
+                                {company.name}
+                              </span>
+                              <span>{company.contact_person}</span>
+                              <span>{company.email}</span>
+                              <span>{company.phone}</span>
+                              <span>{company.address}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                       <div>
                         <p className="mb-2">To</p>
-                        <div className="bg  h-32 ">
-                          {/* <Textarea
-                      className="bg-transparent rounded-none  text-sm border-none h-full resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder="Select customer"
-                      rows={4}
-                    /> */}
-                          <span className="text-sm text-muted-foreground"></span>
+                        <div className=" flex text-sm text-black redd flex-col items-start justify-start   h-32 ">
+                          <span className="font-bold capitalize">
+                            {CUSTOMER.name}
+                          </span>
+                          <span>{CUSTOMER.contact_person}</span>
+                          <span>{CUSTOMER.email}</span>
+                          <span>{CUSTOMER.phone}</span>
+                          <span>{CUSTOMER.address}</span>
                         </div>
                       </div>
                     </div>
@@ -112,7 +138,7 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                         <div className="col-span-2 text-right">Total</div>
                       </div>
 
-                      {INV.items.map((item) => (
+                      {INVOICE.items.map((item) => (
                         <div
                           key={item.id}
                           className="grid grid-cols-12 gap-4 mb-2"
@@ -120,8 +146,9 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                           <div className="col-span-6">
                             <Input
                               type="text"
+                              readOnly
                               className=" capitalize shadow-none   focus:bg-neutral-100  rounded-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 "
-                              value={item.description}
+                              defaultValue={item.description}
                               // placeholder="type"
                               //   onChange={(e) =>
                               //     updateItem(
@@ -136,7 +163,8 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                             <Input
                               className=" capitalize shadow-none focus:bg-neutral-100 border-none rounded-none text-center focus-visible:ring-0 focus-visible:ring-offset-0"
                               type="number"
-                              value={item.quantity || ""}
+                              readOnly
+                              defaultValue={item.quantity || ""}
                               //   onChange={(e) =>
                               //     updateItem(
                               //       item.id,
@@ -150,7 +178,8 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                             <Input
                               className=" capitalize shadow-none focus:bg-neutral-100 rounded-none border-none text-center focus-visible:ring-0 focus-visible:ring-offset-0"
                               type="number"
-                              value={item.price || ""}
+                              readOnly
+                              defaultValue={item.price || ""}
                               //   onChange={(e) =>
                               //     updateItem(
                               //       item.id,
@@ -171,15 +200,23 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                     <div className="flex flex-col items-end space-y-2 mt-6">
                       <div className="grid grid-cols-2 gap-4 w-1/3 text-zinc-500">
                         <div className="text-sm">Subtotal</div>
-                        <div className="text-right text-black"></div>
+                        <div className="text-right text-black">
+                          {calculateSubtotal()}
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4 w-1/3 text-zinc-500">
-                        <div className="text-sm">Tax {`(${""}%)`}</div>
-                        <div className="text-right text-black"></div>
+                        <div className="text-sm">
+                          Tax {`(${INVOICE.tax_rate}%)`}
+                        </div>
+                        <div className="text-right text-black">
+                          {calculateTax()}
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4 w-1/3 font-bold mt-2">
                         <div className="">Total</div>
-                        <div className="text-right text-black text-xl"></div>
+                        <div className="text-right text-black text-xl">
+                          {INVOICE.amount}
+                        </div>
                       </div>
                     </div>
 
@@ -188,14 +225,16 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                       <div>
                         <Label className="mb-2 block">Payment Details</Label>
                         <Textarea
-                          value={""}
+                          readOnly
+                          defaultValue={INVOICE.payment_details}
                           className="focus:bg-neutral-100  shadow-none rounded-none border-none h-24 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
                         />
                       </div>
                       <div>
                         <Label className="mb-2 block">Note</Label>
                         <Textarea
-                          value={""}
+                          readOnly
+                          defaultValue={INVOICE.note}
                           className="focus:bg-neutral-100  shadow-none rounded-none border-none h-24 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
                         />
                       </div>

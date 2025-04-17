@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { Check, ChevronDown, Plus } from "lucide-react";
+import { Check, ChevronDown, Loader, Plus } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -41,6 +41,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
   const [customers, setCustomers] = useState([]);
   const [from, setFrom] = useState("");
   const [teamId, setTeamID] = useState("");
+  const [teamCompany, setTeamCompany] = useState([]);
   const [customerID, setCustomerID] = useState("");
   const FileRef = useRef(null);
   const [invoiceData, setInvoiceData] = useState({
@@ -64,6 +65,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
       const team = await getTeamData();
       setCustomers(data);
       setTeamID(team.id);
+      setTeamCompany(team.team_company);
     };
     FetchData();
   }, []);
@@ -192,9 +194,9 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
           tax_rate: taxRate,
           invoice_no: invoiceNumber,
           invoice_logo: logoUrl,
-          payment_deatils: paymentDetails,
+          payment_details: paymentDetails,
           note: note,
-          from: from,
+          from: teamCompany,
           status: "draft", // default status
         },
       ]);
@@ -203,7 +205,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
         toast.error(error.message);
       }
       // Success
-      
+
       toast.success("Invoice submitted successfully!");
       closeRef.current?.click(); // Close Sheet
     } catch (error) {
@@ -267,7 +269,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
                       alt=""
                       width={500}
                       height={500}
-                      className="size-full object-cover"
+                      className="size-full bg-neutral-100 object-cover"
                     />
                   )}
                   <input
@@ -283,23 +285,31 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <p className="mb-2">From</p>
-                  <div className="bg-neutral-300  h-32 ">
-                    <Textarea
-                      className="bg-transparent focus:bg-neutral-100 bg-neutral-300 shadow-none text-sm rounded-none border-none h-full resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder=""
-                      onChange={(e) => setFrom(e.target.value)}
-                      rows={4}
-                    />
-                  </div>
+
+                  {teamCompany && teamCompany.length > 0 ? (
+                    teamCompany.map((company, i) => (
+                      <div
+                        key={i}
+                        className="flex text-sm text-black redd flex-col items-start justify-start h-32"
+                      >
+                        <span className="font-bold capitalize">
+                          {company.name}
+                        </span>
+                        <span>{company.contact_person}</span>
+                        <span>{company.email}</span>
+                        <span>{company.phone}</span>
+                        <span>{company.address}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm px-4 py-2  rounded">
+                      <Loader className="size-4 animate-spin" />
+                    </div>
+                  )}
                 </div>
                 <div>
                   <p className="mb-2">To</p>
                   <div className="bg  h-32 ">
-                    {/* <Textarea
-                      className="bg-transparent rounded-none  text-sm border-none h-full resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                      placeholder="Select customer"
-                      rows={4}
-                    /> */}
                     <span className="text-sm text-muted-foreground">
                       <SelectCustomer
                         setOpen={setOpen}
