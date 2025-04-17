@@ -147,3 +147,44 @@ export async function DeleteData(table: string, id: string) {
 
   revalidatePath("/dashboard", "layout");
 }
+export async function updateTeamCompanyInfo(formData: FormData) {
+  const team_id = formData.get("team_id") as string;
+  const name = formData.get("name") as string;
+  const contact_person = formData.get("contact_person") as string;
+  const email = formData.get("email") as string;
+  const phone = formData.get("phone") as string;
+  const tax_id = formData.get("tax_id") as string;
+  const address = formData.get("address") as string;
+
+  if (!team_id || !name) {
+    console.log("Missing team_id or name");
+    return;
+  }
+
+  const supabase = await createClient();
+
+  const updateData = {
+    team_company: [
+      {
+        name,
+        contact_person,
+        email,
+        phone,
+        tax_id,
+        address,
+      },
+    ],
+  };
+
+  const { error } = await supabase
+    .from("teams")
+    .update(updateData)
+    .eq("id", team_id);
+
+  if (error) {
+    console.log("Supabase update error:", error);
+  } else {
+    console.log("Company info updated successfully.");
+    revalidatePath("/settings/team"); // Revalidate page if needed
+  }
+}

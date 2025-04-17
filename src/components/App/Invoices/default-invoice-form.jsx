@@ -12,6 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import SetTeamCompanyPopover from "@/components/App/Popover/set-team-company-popover";
 import {
   Command,
   CommandEmpty,
@@ -37,6 +38,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
   const [file, setFile] = useState(null);
   const [logoUrl, setLogoUrl] = useState("");
   const [open, setOpen] = React.useState(false);
+  const [openP, setOpenP] = React.useState(false);
   const [value, setValue] = React.useState("");
   const [customers, setCustomers] = useState([]);
   const [from, setFrom] = useState("");
@@ -44,6 +46,16 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
   const [teamCompany, setTeamCompany] = useState([]);
   const [customerID, setCustomerID] = useState("");
   const FileRef = useRef(null);
+  // Add this at the top of your component
+  const [showAddCompany, setShowAddCompany] = useState(false);
+
+  useEffect(() => {
+    if (teamCompany?.length === 0) {
+      setTimeout(() => {
+        setShowAddCompany(true);
+      }, 1000); // 1 second delay
+    }
+  }, [teamCompany?.length]);
   const [invoiceData, setInvoiceData] = useState({
     invoiceNumber: invoiceNumber,
     invoiceLogo: logoUrl,
@@ -163,24 +175,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
       return;
     }
 
-    // const finalData = {
-    //   ...invoiceData,
-    //   total: calculateTotal(),
-    // };
-
     try {
-      // Log to console
-      // console.log("🧾 Submitting Invoice Data:", finalData);
-
-      // Toast the preview
-      // toast.info(
-      //   "Invoice Data Preview:\n" + JSON.stringify(finalData, null, 2),
-      //   {
-      //     duration: 8000,
-      //   }
-      // );
-
-      // Simulate API call
       const { error } = await sp.from("invoices").insert([
         {
           team_id: teamId,
@@ -217,7 +212,6 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
   return (
     <div className="size-full bg-neutral-100 overflow-y-scroll hideScrollbar">
       <form
-        // action=""
         onSubmit={handleSubmit}
         className="flex flex-col items-center justify-center gap-2"
       >
@@ -284,8 +278,9 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
               {/* From/To Section */}
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <p className="mb-2">From</p>
-
+                  <p onClick={() => setOpenP(!openP)} className="mb-2">
+                    From
+                  </p>
                   {teamCompany && teamCompany.length > 0 ? (
                     teamCompany.map((company, i) => (
                       <div
@@ -299,11 +294,27 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
                         <span>{company.email}</span>
                         <span>{company.phone}</span>
                         <span>{company.address}</span>
+                        <span>TAX ID: {company.tax_id}</span>
                       </div>
                     ))
+                  ) : showAddCompany ? (
+                    <SetTeamCompanyPopover
+                      teamID={teamId}
+                      setOpenP={setOpenP}
+                      openP={openP}
+                    >
+                      <Button
+                        type="Button"
+                        variant={"ghost"}
+                        // className="text-sm px-4 py-2 bg-neutral-800 text-white rounded hover:bg-neutral-700"
+                      >
+                        Set Company
+                      </Button>
+                    </SetTeamCompanyPopover>
                   ) : (
-                    <div className="text-sm px-4 py-2  rounded">
+                    <div className="text-sm px-4 py-2 rounded flex items-center gap-2 text-zinc-500">
                       <Loader className="size-4 animate-spin" />
+                      Loading...
                     </div>
                   )}
                 </div>
@@ -326,7 +337,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
 
               {/* Items Table */}
               <div>
-                <div className="grid grid-cols-12 gap-4 mb-2 text-zinc-500">
+                <div className="grid grid-cols-12 gap-4 mb-2 mt-5 text-zinc-500">
                   <div className="col-span-6">Description</div>
                   <div className="col-span-2 text-center">Quantity</div>
                   <div className="col-span-2 text-center">Price</div>
@@ -482,6 +493,7 @@ function SelectCustomer({
                     <span>{customer.email}</span>
                     <span>{customer.phone}</span>
                     <span>{customer.address}</span>
+                    <span>TAX ID: {customer.tax_id}</span>
                   </div>
                 ) : (
                   "Customer not found"

@@ -98,7 +98,7 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                     <div className="grid grid-cols-2 gap-6">
                       <div>
                         <p className="mb-2">From</p>
-                        {team.team_company.map((company, i) => {
+                        {team.team_company?.map((company, i) => {
                           return (
                             <div
                               key={i}
@@ -111,6 +111,7 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                               <span>{company.email}</span>
                               <span>{company.phone}</span>
                               <span>{company.address}</span>
+                              <span>TAX ID: {company.tax_id}</span>
                             </div>
                           );
                         })}
@@ -125,13 +126,14 @@ const ViewInvoiceSheet = async ({ children, id }) => {
                           <span>{CUSTOMER.email}</span>
                           <span>{CUSTOMER.phone}</span>
                           <span>{CUSTOMER.address}</span>
+                          <span>TAX ID: {CUSTOMER.tax_id}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Items Table */}
                     <div>
-                      <div className="grid grid-cols-12 gap-4 mb-2 text-zinc-500">
+                      <div className="grid grid-cols-12 gap-4 mb-2 mt-5  text-zinc-500">
                         <div className="col-span-6">Description</div>
                         <div className="col-span-2 text-center">Quantity</div>
                         <div className="col-span-2 text-center">Price</div>
