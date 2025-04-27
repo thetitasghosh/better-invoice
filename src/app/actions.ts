@@ -50,6 +50,13 @@ export async function SignUpAction(prevState: any, formData: FormData) {
   revalidatePath("/", "layout");
   redirect("/teams/create");
 }
+export async function LogOutAction() {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    console.error(error.message);
+  }
+}
 export async function TeamsCreateAction(formData: FormData) {
   const sp = await createClient();
   const teamName = formData.get("name") as string;
