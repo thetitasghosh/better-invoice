@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import Image from "next/image";
-import { getTeamData } from "@/app/actions";
+import { getInvoiceFromByTeamId, getTeamData } from "@/app/actions";
 const DefaultInvoiceTemplate = ({ children, closeRef }) => {
   const [invoiceNumber, setInvoiceNumber] = useState("INV-0001");
   const [issueDate, setIssueDate] = useState(Date.now());
@@ -42,6 +42,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
   const [value, setValue] = React.useState("");
   const [customers, setCustomers] = useState([]);
   const [from, setFrom] = useState("");
+  const [invoice_From, setInvoice_From] = useState("");
   const [teamId, setTeamID] = useState("");
   const [teamCompany, setTeamCompany] = useState([]);
   const [customerID, setCustomerID] = useState("");
@@ -75,9 +76,11 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
     const FetchData = async () => {
       const data = await getCustomers();
       const team = await getTeamData();
+      const invoice_from = await getInvoiceFromByTeamId(team.id);
       setCustomers(data);
       setTeamID(team.id);
       setTeamCompany(team.team_company);
+      setInvoice_From(invoice_from);
     };
     FetchData();
   }, []);
@@ -208,6 +211,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
       toast.error("Failed to submit invoice. Please try again.");
     }
   };
+  console.log(invoice_From);
 
   return (
     <div className="size-full bg-neutral-100 overflow-y-scroll hideScrollbar">
@@ -281,20 +285,23 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
                   <p onClick={() => setOpenP(!openP)} className="mb-2">
                     From
                   </p>
-                  {teamCompany && teamCompany.length > 0 ? (
-                    teamCompany.map((company, i) => (
+                  {invoice_From || invoice_From.length > 0 ? (
+                    invoice_From.map((company, i) => (
                       <div
                         key={i}
                         className="flex text-sm text-black redd flex-col items-start justify-start h-32"
                       >
                         <span className="font-bold capitalize">
-                          {company.name}
+                          {company.company_name}
                         </span>
                         <span>{company.contact_person}</span>
                         <span>{company.email}</span>
                         <span>{company.phone}</span>
                         <span>{company.address}</span>
-                        <span>TAX ID: {company.tax_id}</span>
+                        <span>
+                          TAX ID:{" "}
+                          {company.tax_id ? company.tax_id : "Not provided"}
+                        </span>
                       </div>
                     ))
                   ) : showAddCompany ? (

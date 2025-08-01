@@ -425,3 +425,59 @@ export async function updateTeamMember(prev: any, formData: FormData) {
 
   return data;
 }
+export async function getCurrentTeamForUser() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) return null;
+
+  const { data, error } = await supabase
+    .from("team_members")
+    .select(" team_id(name,id)")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error || !data?.team_id) return null;
+
+  return data.team_id;
+}
+export async function getInvoiceFromByTeamId(team_id: string) {
+  const sp = await createClient();
+  const { data, error } = await sp
+    .from("invoice_from_default")
+    .select("*")
+    .eq("team_id", team_id);
+
+  if (error || !data) return null;
+
+  return data;
+}
+export async function updateInvoiceFrom(formData: FormData) {
+  const sp = await createClient();
+
+  const team_id = formData.get("team_id") as string;
+  const payload = {
+    name: formData.get("name"),
+    contact_person: formData.get("contact_person"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    tax_id: formData.get("tax_id"),
+    address: formData.get("address"),
+  };
+
+  const { error: upsertError } = await sp.from("invoice_from_default").upsert(
+    {
+      ...payload,
+      team_id,
+    },
+    {
+      onConflict: "team_id",
+    }
+  );
+
+  if (upsertError) throw new Error(upsertError.message);
+}

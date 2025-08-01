@@ -42,11 +42,15 @@ const SetTeamCompanyPopover = ({ children, teamID, openP, setOpenP }) => {
     setLoading(true);
 
     const { error } = await supabase
-      .from("teams")
+      .from("invoice_from_default")
       .update({
-        team_company: [formData], // store as array of 1 object
+        company_name: formData.name,
+        contact_person: formData.contact_person,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
       })
-      .eq("id", teamID);
+      .eq("team_id", teamID); // Assuming you use `team_id` as foreign key
 
     setLoading(false);
 
@@ -54,8 +58,7 @@ const SetTeamCompanyPopover = ({ children, teamID, openP, setOpenP }) => {
       toast.error("Failed to save company info");
     } else {
       toast.success("Company info saved");
-      // Optionally clear or close popover
-      // setFormData({ name: "", contact_person: "", email: "", phone: "", address: "" });
+      setOpenP(false);
     }
   };
 

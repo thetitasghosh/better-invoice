@@ -1,112 +1,118 @@
-// app/settings/team/page.tsx or wherever your route is
-import { getTeamData } from "@/app/actions";
-import SubmitButton from "@/components/App/Buttons/submit-button";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { updateTeamCompanyInfo } from "@/app/actions";
+import SubmitButton from "@/components/App/Buttons/submit-button";
+// import { getCookie } from "cookies-next";
+import { toast } from "sonner";
+import { createClient } from "@/utils/supabase/client";
+import { useTeamContext } from "@/Contexts/UserContext";
+import { getInvoiceFromByTeamId } from "@/app/actions";
 
-const Page = async () => {
-  const team = await getTeamData();
-  const company = team?.team_company?.[0] || {
+const TeamSettingsPage = () => {
+  const supabase = createClient();
+  const { teamId } = useTeamContext();
+  const [company, setCompany] = useState({
     name: "",
     contact_person: "",
     email: "",
     phone: "",
     tax_id: "",
     address: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  // const [teamId, setTeamId] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getInvoiceFromByTeamId(teamId);
+
+      if (data) setCompany(data);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [teamId]);
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const updatedCompany = {
+      // name: formData.get("name"),
+      company_name: formData.get("company_name"),
+      contact_person: formData.get("contact_person"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      tax_id: formData.get("tax_id"),
+      address: formData.get("address"),
+    };
+
+    const { error } = await supabase
+      .from("invoice_from_default")
+      .upsert({ ...updatedCompany, team_id: teamId });
+
+    if (error) toast.error("Failed to update company info");
+    else toast.success("Company info updated");
+
+    setLoading(false);
   };
+
+  if (!teamId) return <p className="p-5">No team selected.</p>;
+
   return (
     <div className="size-full">
       <form
-        action={updateTeamCompanyInfo}
+        onSubmit={handleUpdate}
         className="h-full w-fit flex flex-col items-start justify-center gap-4 p-5"
       >
-        <h1 className="text-2xl">Team Company</h1>
+        <h1 className="text-2xl">Company Info</h1>
 
-        <div className="space-y-1">
-          <Label htmlFor="name" className="pl-1">
-            My Company
-          </Label>
-          <Input
-            defaultValue={company.name}
-            name="name"
-            id="name"
-            className="w-96"
-            required
-          />
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="contact_person" className="pl-1">
-            Contact Person
-          </Label>
-          <Input
-            name="contact_person"
-            defaultValue={company.contact_person}
-            id="contact_person"
-            className="w-96"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="email" className="pl-1">
-            Email
-          </Label>
-          <Input
-            name="email"
-            defaultValue={company.email}
-            id="email"
-            className="w-96"
-            type="email"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="phone" className="pl-1">
-            Phone
-          </Label>
-          <Input
-            name="phone"
-            defaultValue={company.phone}
-            id="phone"
-            className="w-96"
-          />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="tax_id" className="pl-1">
-            TAX ID
-          </Label>
-          <Input
-            name="tax_id"
-            defaultValue={company.tax_id}
-            id="tax_id"
-            className="w-96"
-          />
-        </div>
-
-        <div className="space-y-1">
-          <Label htmlFor="address" className="pl-1">
-            Address
-          </Label>
-          <Textarea
-            defaultValue={company.address}
-            name="address"
-            id="address"
-            className="w-96"
-            rows={3}
-          />
-        </div>
-
-        {/* Hidden input to pass team ID */}
-        <input type="hidden" name="team_id" value={team?.id} />
+        {[
+          "company_name",
+          "contact_person",
+          "email",
+          "phone",
+          "tax_id",
+          "address",
+        ].map((field) => (
+          <div key={field} className="space-y-1">
+            <Label htmlFor={field} className="pl-1 capitalize">
+              {field.replace("_", " ")}
+            </Label>
+            {field === "address" ? (
+              <Textarea
+                id={field}
+                name={field}
+                defaultValue={company[field]}
+                className="w-96"
+                rows={3}
+              />
+            ) : (
+              <Input
+                id={field}
+                name={field}
+                defaultValue={company[field]}
+                className="w-96"
+              />
+            )}
+          </div>
+        ))}
 
         <div className="text-right w-full">
-          <SubmitButton label="Update" />
+          <SubmitButton
+            label={loading ? "Saving..." : "Update"}
+            disabled={loading}
+          />
         </div>
       </form>
     </div>
   );
 };
 
-export default Page;
+export default TeamSettingsPage;
