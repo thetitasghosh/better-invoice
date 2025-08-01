@@ -24,11 +24,11 @@ export default layout;
 function UserCircle({ email }) {
   return (
     <>
-      <div className="relative redd">
-        <div className="size-10 rounded-full bg-neutral-200 grid place-content-center text-lg">
+      <div className="relative redd flex items-center gap-2 justify-center">
+        <div className="size-8 rounded-full bg-neutral-200 grid place-content-center text-lg">
           {getEmailInitial(email)}
         </div>
-        <span className="absolute left-3">{email}</span>
+        <span className=" ">{email}</span>
       </div>
     </>
   );

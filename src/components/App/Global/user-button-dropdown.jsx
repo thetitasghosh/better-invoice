@@ -47,7 +47,7 @@ export function UserButtonDropDown({ children }) {
               <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
             </DropdownMenuItem>
           </Link>
-          <DropdownMenuItem>
+          <DropdownMenuItem disabled>
             <CreditCard />
             <span>Billing</span>
             <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
@@ -66,7 +66,7 @@ export function UserButtonDropDown({ children }) {
           </DropdownMenuItem> */}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
+        {/* <DropdownMenuGroup>
           <DropdownMenuItem>
             <Users />
             <span>Team</span>
@@ -99,16 +99,16 @@ export function UserButtonDropDown({ children }) {
             <span>New Team</span>
             <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
           </DropdownMenuItem>
-        </DropdownMenuGroup>
+        </DropdownMenuGroup> */}
         <DropdownMenuSeparator />
         {/* <DropdownMenuItem>
           <Github />
           <span>GitHub</span>
         </DropdownMenuItem> */}
-        <DropdownMenuItem>
+        {/* <DropdownMenuItem>
           <LifeBuoy />
           <span>Support</span>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         {/* <DropdownMenuItem disabled>
           <Cloud />
           <span>API</span>

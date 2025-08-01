@@ -2,6 +2,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { v4 as uuidv4 } from "uuid";
 
 export async function getUserData() {
   const sp = await createClient();
@@ -194,4 +195,233 @@ export async function updateTeamCompanyInfo(formData: FormData) {
     console.log("Company info updated successfully.");
     revalidatePath("/settings/team"); // Revalidate page if needed
   }
+}
+export async function getUserTeamInfo() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) return null;
+
+  const { data: teamMember, error } = await supabase
+    .from("team_members")
+    .select("id, team_id, role")
+    .eq("email", user.email)
+    .eq("user_id", user.id)
+    .single();
+
+  if (error || !teamMember) {
+    return {
+      userId: user.id,
+      teamMemberId: null,
+      teamId: null,
+      role: null,
+    };
+  }
+
+  return {
+    userId: user.id,
+    teamMemberId: teamMember.id,
+    teamId: teamMember.team_id,
+    role: teamMember.role,
+  };
+}
+export async function getTeamIdByUserId(user_id: string) {
+  const sp = await createClient();
+
+  // const {
+  //   data: { user },
+  //   error: userError,
+  // } = await sp.auth.getUser();
+
+  const { data: team, error: teamError } = await sp
+    .from("teams")
+    .select("id")
+    .eq("owner_id", user_id)
+    .order("created_at", { ascending: false })
+    // .limit(1)
+    .single();
+  // console.log(team.name);
+
+  if (teamError) {
+    console.error("Error fetching team:", teamError.message);
+    return null;
+  }
+
+  return team.id;
+}
+export async function getTeamMemberDataById(id: string) {
+  const sp = await createClient();
+
+  // const {
+  //   data: { user },
+  //   error: userError,
+  // } = await sp.auth.getUser();
+
+  const { data: team, error: teamError } = await sp
+    .from("team_members")
+    .select("*")
+    .eq("id", id);
+  // .order("created_at", { ascending: false });
+  // .limit(1)
+  // .single();
+  // console.log(team.name);
+
+  if (teamError) {
+    console.error("Error fetching team:", teamError.message);
+    return null;
+  }
+
+  return team[0];
+}
+export async function createTeamMember(prev: any, formData: FormData) {
+  const name = formData.get("full_name") as string;
+  const phone = formData.get("phone") as string;
+  const team_id = formData.get("team_id") as string;
+  const email = formData.get("email") as string;
+  const file = formData.get("avatar") as File | null;
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("User not authenticated.");
+  }
+
+  // Optional: Check if team_member already exists
+  const { data: exists } = await supabase
+    .from("team_members")
+    .select("id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (exists) {
+    throw new Error("You already have a team member profile.");
+  }
+
+  let avatar_url = "";
+
+  if (file && file.size > 0) {
+    const fileExt = file.name.split(".").pop();
+    const filePath = `avatars/${user.id}/${uuidv4()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, {
+        contentType: file.type,
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new Error("Failed to upload avatar.");
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(filePath);
+    avatar_url = urlData.publicUrl;
+  }
+
+  const { data, error } = await supabase
+    .from("team_members")
+    .insert([
+      {
+        user_id: user.id,
+        email: user.email,
+        name,
+        phone,
+        avatar_url,
+        team_id,
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  revalidatePath("/dashboard");
+
+  return data;
+}
+export async function updateTeamMember(prev: any, formData: FormData) {
+  const name = formData.get("full_name") as string;
+  const phone = formData.get("phone") as string;
+  const team_id = formData.get("team_id") as string;
+  const email = formData.get("email") as string;
+  const team_member_id = formData.get("team_member_id") as string;
+  const file = formData.get("avatar") as File | null;
+
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("User not authenticated.");
+  }
+
+  // Optional: Check if team_member already exists
+  // const { data: exists } = await supabase
+  //   .from("team_members")
+  //   .select("id")
+  //   .eq("user_id", user.id)
+  //   .maybeSingle();
+
+  // if (exists) {
+  //   throw new Error("You already have a team member profile.");
+  // }
+
+  let avatar_url = "";
+
+  if (file && file.size > 0) {
+    const fileExt = file.name.split(".").pop();
+    const filePath = `avatars/${user.id}/${uuidv4()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file, {
+        contentType: file.type,
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new Error("Failed to upload avatar.");
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(filePath);
+    avatar_url = urlData.publicUrl;
+  }
+
+  const { data, error } = await supabase
+    .from("team_members")
+    .update([
+      {
+        user_id: user.id,
+        email: user.email,
+        name,
+        phone,
+        avatar_url,
+        team_id,
+      },
+    ])
+    .eq("id", team_member_id);
+
+  if (error) throw error;
+
+  revalidatePath("/dashboard");
+
+  return data;
 }

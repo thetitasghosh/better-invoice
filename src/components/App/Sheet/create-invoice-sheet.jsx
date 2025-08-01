@@ -14,8 +14,16 @@ import Icon from "../Global/Icon";
 import DefaultInvoiceTemplate from "@/components/App/Invoices/default-invoice-form";
 import CancelButton from "../Buttons/cancel-button";
 import SubmitButton from "../Buttons/submit-invoice-button";
+import { useTeamContext } from "@/Contexts/UserContext";
 const CreateInvoiceSheet = ({ children }) => {
   const closeRef = useRef(null);
+  const { loading, teamId, teamMemberId, userId } = useTeamContext();
+  // console.log({
+  //   teamId,
+  //   teamMemberId,
+  //   userId,
+  // });
+
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
@@ -38,7 +46,7 @@ const CreateInvoiceSheet = ({ children }) => {
               <CancelButton />
             </SheetClose>
             <SheetClose hidden>
-              <button ref={closeRef} type="button"  />
+              <button ref={closeRef} type="button" />
             </SheetClose>
             <SubmitButton label={"Create"} />
           </DefaultInvoiceTemplate>
