@@ -1,14 +1,27 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { CreateCustomerAction } from "@/app/actions";
+import { CreateCustomerAction, UpdateCustomerAction } from "@/app/actions";
 import { Textarea } from "@/components/ui/textarea";
 import { useFormState } from "react-dom";
 import { ChevronsRight } from "lucide-react";
-const CreateCustomerForm = ({ children, closeRef }) => {
-  const [state, action] = useFormState(CreateCustomerAction, null);
+import { getCustomerById } from "@/data/getDatas";
+import { cn } from "@/lib/utils";
+const CreateCustomerForm = ({
+  children,
+  closeRef,
+  customer_id,
+  view,
+  update,
+}) => {
+  const [state, action] = useFormState(
+    customer_id ? UpdateCustomerAction : CreateCustomerAction,
+    null
+  );
+  const [customer, setCustomer] = useState([]);
+  const [formValues, setFormValues] = useState({});
 
   useEffect(() => {
     if (state === null) return;
@@ -16,10 +29,26 @@ const CreateCustomerForm = ({ children, closeRef }) => {
     if (state?.error) {
       toast.error("Something went wrong");
     } else {
-      toast.success("Customer created successfully");
+      toast.success(
+        customer_id
+          ? "Customer updated successfully"
+          : "Customer created successfully"
+      );
       closeRef.current?.click(); // Close Sheet
     }
-  }, [state, closeRef]);
+  }, [state, closeRef, customer_id]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getCustomerById(customer_id);
+      setCustomer(data);
+      setFormValues(data);
+    };
+    fetchData();
+  }, [customer_id]);
+  console.log(customer);
+  const handleChange = (field, value) => {
+    setCustomer((prev) => ({ ...prev, [field]: value }));
+  };
   return (
     <div className="w-full redd  overflow-y-scroll hideScrollbar h-full">
       <form
@@ -32,7 +61,20 @@ const CreateCustomerForm = ({ children, closeRef }) => {
             <Label htmlFor="name" className="pl-1">
               Name
             </Label>
-            <Input id="name" name="name" placeholder="Acme Inc." required />
+            <Input
+              id="name"
+              name="name"
+              placeholder="Acme Inc."
+              required
+              value={customer.name || ""}
+              // value={formValues.name || ""}
+              onChange={(e) => handleChange("name", e.target.value)}
+              readOnly={view}
+              className={cn("", {
+                "border-none shadow-none font-bold": customer_id,
+              })}
+            />
+            <input type="text" name="customer_id" value={customer_id} hidden />
           </div>
           <div
             id="form-slot"
@@ -42,26 +84,66 @@ const CreateCustomerForm = ({ children, closeRef }) => {
               <Label htmlFor="email" className="pl-1">
                 Email
               </Label>
-              <Input id="email" name="email" placeholder="example@email.com" />
+              <Input
+                id="email"
+                name="email"
+                placeholder="example@email.com"
+                value={customer.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                readOnly={view}
+                className={cn("", {
+                  "border-none shadow-none font-bold": customer_id,
+                })}
+              />
             </div>
             <div>
               <Label htmlFor="phone" className="pl-1">
                 Phone
               </Label>
-              <Input id="phone" name="phone" placeholder="+91 XXXXXXXXXX" />
+              <Input
+                id="phone"
+                name="phone"
+                placeholder="+91 XXXXXXXXXX"
+                value={customer.phone}
+                onChange={(e) => handleChange("phone", e.target.value)}
+                readOnly={view}
+                className={cn("", {
+                  "border-none shadow-none font-bold": customer_id,
+                })}
+              />
             </div>
           </div>
           <div id="form-slot" className="w-full">
             <Label htmlFor="website" className="pl-1">
               Website
             </Label>
-            <Input id="website" name="website" placeholder="www.website.com" />
+            <Input
+              id="website"
+              name="website"
+              placeholder="www.website.com"
+              value={customer.website}
+              onChange={(e) => handleChange("website", e.target.value)}
+              readOnly={view}
+              className={cn("", {
+                "border-none shadow-none font-bold": customer_id,
+              })}
+            />
           </div>
           <div id="form-slot" className="w-full">
             <Label htmlFor="owner" className="pl-1">
               Contact Persona / Owner
             </Label>
-            <Input id="owner" name="contact_person" placeholder="john Doe." />
+            <Input
+              id="owner"
+              name="contact_person"
+              placeholder="john Doe."
+              value={customer.contact_person}
+              onChange={(e) => handleChange("contact_persone", e.target.value)}
+              readOnly={view}
+              className={cn("", {
+                "border-none shadow-none font-bold": customer_id,
+              })}
+            />
           </div>
         </div>
         <div id="general-address-form" className="w-full space-y-2">
@@ -70,7 +152,17 @@ const CreateCustomerForm = ({ children, closeRef }) => {
             <Label htmlFor="address" className="pl-1">
               Address
             </Label>
-            <Input id="address" name="address" placeholder="Address" />
+            <Input
+              id="address"
+              name="address"
+              placeholder="Address"
+              value={customer.address}
+              onChange={(e) => handleChange("address", e.target.value)}
+              readOnly={view}
+              className={cn("", {
+                "border-none shadow-none font-bold": customer_id,
+              })}
+            />
           </div>
           {/* <div
             id="form-slot"
@@ -99,7 +191,17 @@ const CreateCustomerForm = ({ children, closeRef }) => {
             <Label htmlFor="tax_id" className="pl-1">
               Tax ID / VAT Number
             </Label>
-            <Input id="tax_id" name="tax_id" placeholder="Enter VAT number" />
+            <Input
+              id="tax_id"
+              name="tax_id"
+              placeholder="Enter VAT number"
+              value={customer.tax_id}
+              onChange={(e) => handleChange("tax_id", e.target.value)}
+              readOnly={view}
+              className={cn("", {
+                "border-none shadow-none font-bold": customer_id,
+              })}
+            />
           </div>
           <div id="form-slot" className="w-full">
             <Label htmlFor="note" className="pl-1">
@@ -110,6 +212,12 @@ const CreateCustomerForm = ({ children, closeRef }) => {
               name="note"
               rows={3}
               placeholder="Additional information.."
+              value={customer.note}
+              onChange={(e) => handleChange("note", e.target.value)}
+              readOnly={view}
+              className={cn("", {
+                "border-none shadow-none font-bold": customer_id,
+              })}
             />
           </div>
         </div>

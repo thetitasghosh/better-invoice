@@ -12,24 +12,34 @@ import {
 import CreateCustomerForm from "@/components/App/Forms/create-customer-form";
 import CancelButton from "@/components/App/Buttons/cancel-button";
 import SubmitButton from "@/components/App/Buttons/submit-button";
-const CreateCustomerSheet = ({ children }) => {
+const CreateCustomerSheet = ({ children, customer_id, view, update }) => {
   const closeRef = useRef(null);
   return (
     <Sheet>
-      <SheetTrigger asChild>{children}</SheetTrigger>
+      <SheetTrigger>{children}</SheetTrigger>
       <SheetContent className="min-w-[30rem]  pb-10 ">
         <SheetHeader>
           <SheetTitle className="capitalize">create customer</SheetTitle>
         </SheetHeader>
         <div id="customer-view" className="size-full redd ">
-          <CreateCustomerForm closeRef={closeRef}>
+          <CreateCustomerForm
+            closeRef={closeRef}
+            customer_id={customer_id}
+            update={update}
+            view={view}
+          >
             <SheetClose>
               <CancelButton />
             </SheetClose>
             <SheetClose hidden>
               <button ref={closeRef} type="button" />
             </SheetClose>
-            <SubmitButton label={"Create"} />
+            {update === true ? (
+              <SubmitButton
+                label={update ? "Update" : "Create"}
+                disabled={view}
+              />
+            ) : null}
           </CreateCustomerForm>
         </div>
       </SheetContent>

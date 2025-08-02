@@ -16,6 +16,21 @@ export async function getCustomers() {
 
   return data;
 }
+export async function getCustomerById(id) {
+  const sp = await createClient();
+  // const team = await getTeamData();
+  const { data, error } = await sp
+    .from("customers")
+    .select("*")
+    .eq("id", id)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("Error fetching team:", error.message);
+    return null;
+  }
+
+  return data[0];
+}
 export async function getInvoices() {
   const sp = await createClient();
   const team = await getTeamData();

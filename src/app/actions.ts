@@ -142,6 +142,38 @@ export async function CreateCustomerAction(prevState: any, formData: FormData) {
   }
   revalidatePath("/dashboard/customers", "page");
 }
+export async function UpdateCustomerAction(prevState: any, formData: FormData) {
+  const sp = await createClient();
+  const team = await getTeamData();
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const phone = formData.get("phone") as string;
+  const website = formData.get("website") as string;
+  const contact_person = formData.get("contact_person") as string;
+  const address = formData.get("address") as string;
+  const tax_id = formData.get("tax_id") as string;
+  const customer_id = formData.get("customer_id") as string;
+  const note = formData.get("note") as string;
+
+  const { data, error } = await sp
+    .from("customers")
+    .update({
+      name,
+      email,
+      phone,
+      website,
+      contact_person,
+      address,
+      tax_id,
+      note,
+      team_id: team.id,
+    })
+    .eq("id", customer_id);
+  if (error) {
+    console.error("Error", error.message);
+  }
+  revalidatePath("/dashboard/customers", "page");
+}
 export async function CtreateInoiceAction(prevState: any, formData: FormData) {}
 
 export async function DeleteData(table: string, id: string) {
