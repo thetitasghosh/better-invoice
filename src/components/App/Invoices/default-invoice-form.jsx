@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
-import { Check, ChevronDown, Loader, Plus } from "lucide-react";
+import { Check, ChevronDown, Delete, Loader, Plus, Trash } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -132,6 +132,9 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
     //   ...prev.items,
     //   items: newItem,
     // }));
+  };
+  const removeItem = (idToRemove) => {
+    setItems((prevItems) => prevItems.filter((item) => item.id !== idToRemove));
   };
 
   const updateItem = (id, field, value) => {
@@ -352,11 +355,28 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
                 </div>
 
                 {items.map((item) => (
-                  <div key={item.id} className="grid grid-cols-12 gap-4 mb-2">
+                  <div
+                    key={item.id}
+                    className="grid relative group grid-cols-12 gap-4 mb-2"
+                  >
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      size="icon"
+                      className="absolute top-0 -left-8 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-zinc-500 hover:text-red-600 bg-transparent  gap-0 rounded-none"
+                      onClick={() => removeItem(item.id)}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
                     <div className="col-span-6">
                       <Input
                         type="text"
-                        className=" capitalize shadow-none   focus:bg-neutral-100 bg-neutral-300 rounded-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 "
+                        className={cn(
+                          " capitalize shadow-none   focus:bg-neutral-100 bg-neutral-300 rounded-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 ",
+                          {
+                            "bg-neutral-100": item.description,
+                          }
+                        )}
                         value={item.description}
                         // placeholder="type"
                         onChange={(e) =>
@@ -366,7 +386,12 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
                     </div>
                     <div className="col-span-2">
                       <Input
-                        className="bg-neutral-300 capitalize shadow-none focus:bg-neutral-100 border-none rounded-none text-center focus-visible:ring-0 focus-visible:ring-offset-0"
+                        className={cn(
+                          " capitalize shadow-none   focus:bg-neutral-100 bg-neutral-300 rounded-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 ",
+                          {
+                            "bg-neutral-100": item.quantity,
+                          }
+                        )}
                         type="number"
                         value={item.quantity || ""}
                         onChange={(e) =>
@@ -380,8 +405,13 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
                     </div>
                     <div className="col-span-2">
                       <Input
-                        className="bg-neutral-300 capitalize shadow-none focus:bg-neutral-100 rounded-none border-none text-center focus-visible:ring-0 focus-visible:ring-offset-0"
                         type="number"
+                        className={cn(
+                          " capitalize shadow-none   focus:bg-neutral-100 bg-neutral-300 rounded-none border-none focus-visible:ring-0 focus-visible:ring-offset-0 ",
+                          {
+                            "bg-neutral-100": item.price,
+                          }
+                        )}
                         value={item.price || ""}
                         onChange={(e) =>
                           updateItem(
@@ -437,14 +467,24 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
                   <Label className="mb-2 block">Payment Details</Label>
                   <Textarea
                     onChange={(e) => setPaymentDetails(e.target.value)}
-                    className="focus:bg-neutral-100 bg-neutral-300 shadow-none rounded-none border-none h-24 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className={cn(
+                      "focus:bg-neutral-100 bg-neutral-300 shadow-none rounded-none border-none h-24 resize-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                      {
+                        "bg-neutral-100 h-24": paymentDetails,
+                      }
+                    )}
                   />
                 </div>
                 <div>
                   <Label className="mb-2 block">Note</Label>
                   <Textarea
                     onChange={(e) => setNote(e.target.value)}
-                    className="focus:bg-neutral-100 bg-neutral-300 shadow-none rounded-none border-none h-24 resize-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className={cn(
+                      "focus:bg-neutral-100 bg-neutral-300 shadow-none rounded-none border-none h-24 resize-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                      {
+                        "bg-neutral-100 h-24": note,
+                      }
+                    )}
                   />
                 </div>
               </div>
