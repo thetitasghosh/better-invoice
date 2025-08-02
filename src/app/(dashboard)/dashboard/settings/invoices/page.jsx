@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { ReactInvoicePdf } from "@/components/App/Invoices/react-pdf-invoice";
 
 const data = {
-  invoice_number: "INV-0001",
+  invoice_no: "INV-0001",
   issue_date: "Aug 2, 2025",
   due_date: "Aug 2, 2025",
   logo: "/goal.png", // base64 or full path

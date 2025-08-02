@@ -5,7 +5,7 @@ import InvoiceTable from "@/components/App/Tables/invoice-table";
 const page = () => {
   return (
     <div className="size-full flex  flex-col items-center justify-center gap-2">
-      <div id="widgets"></div>
+      {/* <div id="widgets"></div> */}
       <div id="actions" className="w-full">
         <AppHeader>
           <CreateInvoice label={"Create invoice"} />

@@ -90,7 +90,7 @@ export function ReactInvoicePdf({ data }) {
             <Text style={styles.title}>Invoice</Text>
             <Text>
               Invoice No:{" "}
-              <Text style={{ fontWeight: "bold" }}>{data.invoice_number}</Text>
+              <Text style={{ fontWeight: "bold" }}>{data.invoice_no}</Text>
             </Text>
             <Text>Issue Date: {data.issue_date}</Text>
             <Text>Due Date: {data.due_date}</Text>
@@ -139,12 +139,8 @@ export function ReactInvoicePdf({ data }) {
             <View style={styles.tableRow} key={index}>
               <Text style={[styles.cell, { flex: 4 }]}>{item.description}</Text>
               <Text style={[styles.cell, { flex: 1 }]}>{item.quantity}</Text>
-              <Text style={[styles.cell, { flex: 2 }]}>
-                ₹{item.price.toLocaleString("en-IN")}
-              </Text>
-              <Text style={[styles.cell, { flex: 2 }]}>
-                ₹{item.total.toLocaleString("en-IN")}
-              </Text>
+              <Text style={[styles.cell, { flex: 2 }]}>₹{item.price}</Text>
+              <Text style={[styles.cell, { flex: 2 }]}>₹{item.total}</Text>
             </View>
           ))}
         </View>
@@ -153,17 +149,15 @@ export function ReactInvoicePdf({ data }) {
         <View style={styles.totalSection}>
           <View style={styles.totalRow}>
             <Text>Subtotal:</Text>
-            <Text>₹{data.subtotal.toLocaleString("en-IN")}</Text>
+            <Text>₹{data.subtotal}</Text>
           </View>
           <View style={styles.totalRow}>
             <Text>Tax ({data.tax_rate}%):</Text>
-            <Text>₹{data.tax.toLocaleString("en-IN")}</Text>
+            <Text>₹{data.tax}</Text>
           </View>
           <View style={styles.totalRow}>
             <Text style={styles.label}>Total:</Text>
-            <Text style={styles.label}>
-              ₹{data.total.toLocaleString("en-IN")}
-            </Text>
+            <Text style={styles.label}>₹{data.total}</Text>
           </View>
         </View>
 

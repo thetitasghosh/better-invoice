@@ -3,9 +3,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/utils/supabase/client";
+import { ReactInvoicePdf } from "../Invoices/react-pdf-invoice";
 import { Check, ChevronDown, Delete, Loader, Plus, Trash } from "lucide-react";
 import {
   Popover,
@@ -43,6 +45,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
   const [customers, setCustomers] = useState([]);
   const [from, setFrom] = useState("");
   const [invoice_From, setInvoice_From] = useState("");
+  const [invoice_To, setInvoice_To] = useState("");
   const [teamId, setTeamID] = useState("");
   const [teamCompany, setTeamCompany] = useState([]);
   const [customerID, setCustomerID] = useState("");
@@ -80,7 +83,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
       setCustomers(data);
       setTeamID(team.id);
       setTeamCompany(team.team_company);
-      setInvoice_From(invoice_from);
+      setInvoice_From(invoice_from[0]);
     };
     FetchData();
   }, []);
@@ -182,31 +185,104 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
     }
 
     try {
-      const { error } = await sp.from("invoices").insert([
-        {
-          team_id: teamId,
-          customer_id: customerID,
-          issue_date: format(issueDate, "PP"),
-          due_date: format(dueDate, "PP"),
-          customer: value, // name or label
-          amount: calculateTotal(),
-          recurring: "once", // or you can support recurring logic later
-          items: items, // already JSON
-          tax_rate: taxRate,
-          invoice_no: invoiceNumber,
-          invoice_logo: logoUrl,
-          payment_details: paymentDetails,
-          note: note,
-          from: teamCompany,
-          status: "draft", // default status
-        },
-      ]);
+      const { data, error } = await sp
+        .from("invoices")
+        .insert([
+          {
+            team_id: teamId,
+            customer_id: customerID,
+            issue_date: format(issueDate, "PP"),
+            due_date: format(dueDate, "PP"),
+            customer: value, // name or label
+            amount: calculateTotal(),
+            recurring: "once", // or you can support recurring logic later
+            items: items, // already JSON
+            tax_rate: taxRate,
+            invoice_no: invoiceNumber,
+            invoice_logo: logoUrl,
+            payment_details: paymentDetails,
+            note: note,
+            from: invoice_From,
+            to: invoice_To,
+            status: "draft", // default status
+          },
+        ])
+        .select("id,invoice_no")
+        .single();
       // await sendInvoiceToAPI(finalData);
       if (error) {
         toast.error(error.message);
       }
       // Success
+      const invoiceNo = data.invoice_no;
+      const invoiceId = data.id;
+      // 2. Generate PDF blob
+      const pdfBlob = await pdf(
+        <ReactInvoicePdf
+          data={{
+            invoice_no: invoiceNo,
+            issue_date: format(issueDate, "PP"),
+            due_date: format(dueDate, "PP"),
+            logo: logoUrl,
+            from: invoice_From,
+            to: invoice_To,
+            items,
+            note,
+            subtotal: calculateSubtotal(),
+            total: calculateTotal(),
+            tax_rate: taxRate,
+            payment_details: paymentDetails,
+          }}
+        />
+      ).toBlob();
+      const arrayBuffer = await pdfBlob.arrayBuffer();
+      const base64Pdf = Buffer.from(arrayBuffer).toString("base64");
+      await fetch("/api/send-invoice-to-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: invoice_To?.email,
+          subject: `Invoice ${invoiceNumber} from ${invoice_From.company_name}`,
+          base64Pdf,
+          invoiceNo: invoiceNumber,
+        }),
+      });
 
+      // if (emailRes.ok) {
+      //   toast.success("Invoice emailed to customer!");
+      // } else {
+      //   toast.warning("Invoice created, but failed to send email.");
+      // }
+
+      // 3. Upload to Supabase Storage
+      const { error: uploadError } = await sp.storage
+        .from("einvoices")
+        .upload(`pdfs/${invoiceId}.pdf`, pdfBlob, {
+          cacheControl: "3600",
+          upsert: true,
+          contentType: "application/pdf",
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: fileUrlData } = sp.storage
+        .from("einvoices")
+        .getPublicUrl(`pdfs/${invoiceId}.pdf`);
+
+      const pdfUrl = fileUrlData?.publicUrl;
+      if (!pdfUrl) throw new Error("Failed to get public URL");
+
+      // 4. Send patient notification
+      // await supabase.from("patient_notifications").insert({
+      //   user_id: selectedAppointment.patient?.id,
+      //   type: "prescription",
+      //   title: "New e-Prescription available",
+      //   body: "Your doctor has issued a new prescription.",
+      //   link: pdfUrl,
+      // });
+      await sp.from("invoices").update({ pdf_url: pdfUrl }).eq("id", invoiceId);
       toast.success("Invoice submitted successfully!");
       closeRef.current?.click(); // Close Sheet
     } catch (error) {
@@ -214,7 +290,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
       toast.error("Failed to submit invoice. Please try again.");
     }
   };
-  console.log(invoice_From);
+  // console.log(invoice_From);
 
   return (
     <div className="size-full bg-neutral-100 overflow-y-scroll hideScrollbar">
@@ -289,24 +365,21 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
                     From
                   </p>
                   {invoice_From || invoice_From.length > 0 ? (
-                    invoice_From.map((company, i) => (
-                      <div
-                        key={i}
-                        className="flex text-sm text-black redd flex-col items-start justify-start h-32"
-                      >
-                        <span className="font-bold capitalize">
-                          {company.company_name}
-                        </span>
-                        <span>{company.contact_person}</span>
-                        <span>{company.email}</span>
-                        <span>{company.phone}</span>
-                        <span>{company.address}</span>
-                        <span>
-                          TAX ID:{" "}
-                          {company.tax_id ? company.tax_id : "Not provided"}
-                        </span>
-                      </div>
-                    ))
+                    <div className="flex text-sm text-black redd flex-col items-start justify-start h-32">
+                      <span className="font-bold capitalize">
+                        {invoice_From.company_name}
+                      </span>
+                      <span>{invoice_From.contact_person}</span>
+                      <span>{invoice_From.email}</span>
+                      <span>{invoice_From.phone}</span>
+                      <span>{invoice_From.address}</span>
+                      <span>
+                        TAX ID:{" "}
+                        {invoice_From.tax_id
+                          ? invoice_From.tax_id
+                          : "Not provided"}
+                      </span>
+                    </div>
                   ) : showAddCompany ? (
                     <SetTeamCompanyPopover
                       teamID={teamId}
@@ -339,6 +412,7 @@ const DefaultInvoiceTemplate = ({ children, closeRef }) => {
                         value={value}
                         setValue={setValue}
                         setCustomerID={setCustomerID}
+                        setInvoice_To={setInvoice_To}
                       />
                     </span>
                   </div>
@@ -511,6 +585,7 @@ function SelectCustomer({
   value,
   setValue,
   setCustomerID,
+  setInvoice_To,
 }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -564,6 +639,7 @@ function SelectCustomer({
                     setValue(customerName === value ? "" : customerName);
                     setCustomerID(customer.id);
                     setOpen(false);
+                    setInvoice_To(customer);
                   }}
                 >
                   {customer.name}
