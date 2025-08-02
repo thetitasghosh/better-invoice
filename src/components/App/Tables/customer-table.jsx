@@ -10,9 +10,17 @@ import {
 import { getCustomers } from "@/data/getDatas";
 import CreateCustomerSheet from "../Sheet/create-customer-sheet";
 import TableActionButton from "@/components/App/Buttons/table-action-button";
+import { useEffect, useState } from "react";
 
-export default async function CustomerTable() {
-  const customers = await getCustomers();
+export default function CustomerTable() {
+  const [customers, setCustomers] = useState([]);
+  useEffect(() => {
+    const fetch = async () => {
+      const data = await getCustomers();
+      setCustomers(data);
+    };
+    fetch();
+  }, []);
   if (customers.length <= 0) {
     return (
       <div className="w-full h-full flex items-center justify-center">

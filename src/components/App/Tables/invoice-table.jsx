@@ -11,9 +11,17 @@ import CreateInvoiceSheet from "../Sheet/create-invoice-sheet";
 import { getInvoices } from "@/data/getDatas";
 import TableActionButton from "@/components/App/Buttons/table-action-button";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
-export default async function InvoiceTable() {
-  const invoices = await getInvoices();
+export default function InvoiceTable() {
+  const [invoices, setInvoices] = useState([]);
+  useEffect(() => {
+    const fetch = async () => {
+      const data = await getInvoices();
+      setInvoices(data);
+    };
+    fetch();
+  }, []);
   if (invoices.length <= 0) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -69,7 +77,6 @@ export default async function InvoiceTable() {
                 </TableCell>
                 <TableCell className="py-2 text-center">
                   <TableActionButton table={"invoices"} id={invoice.id} />
-                  
                 </TableCell>
               </TableRow>
             ))}

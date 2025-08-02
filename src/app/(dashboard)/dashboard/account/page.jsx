@@ -35,7 +35,7 @@ const AccountCreationForm = () => {
       console.log(data);
 
       setAvatarPreview(data?.avatar_url);
-      setAvatar(data?.avatar_url);
+      // setAvatar(data?.avatar_url);
       setFullName(data?.name);
       setEmail(data?.email);
       setPhone(data?.phone);
