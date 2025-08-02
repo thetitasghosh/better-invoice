@@ -486,7 +486,7 @@ export async function getInvoiceFromByTeamId(team_id: string) {
 
   if (error || !data) return null;
 
-  return data;
+  return data[0];
 }
 export async function updateInvoiceFrom(formData: FormData) {
   const sp = await createClient();

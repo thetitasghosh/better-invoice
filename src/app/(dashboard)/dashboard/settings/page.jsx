@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import SubmitButton from "@/components/App/Buttons/submit-button";
-// import { getCookie } from "cookies-next";
 import { toast } from "sonner";
 import { createClient } from "@/utils/supabase/client";
 import { useTeamContext } from "@/Contexts/UserContext";
@@ -14,8 +13,10 @@ import { getInvoiceFromByTeamId } from "@/app/actions";
 const TeamSettingsPage = () => {
   const supabase = createClient();
   const { teamId } = useTeamContext();
+
   const [company, setCompany] = useState({
-    name: "",
+    id: "",
+    company_name: "",
     contact_person: "",
     email: "",
     phone: "",
@@ -24,13 +25,25 @@ const TeamSettingsPage = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  // const [teamId, setTeamId] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!teamId) return;
+      setLoading(true);
       const data = await getInvoiceFromByTeamId(teamId);
 
-      if (data) setCompany(data);
+      if (data) {
+        setCompany({
+          id: data.id || "",
+          company_name: data.company_name || "",
+          contact_person: data.contact_person || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          tax_id: data.tax_id || "",
+          address: data.address || "",
+        });
+      }
+
       setLoading(false);
     };
 
@@ -43,8 +56,8 @@ const TeamSettingsPage = () => {
 
     const form = e.currentTarget;
     const formData = new FormData(form);
+
     const updatedCompany = {
-      // name: formData.get("name"),
       company_name: formData.get("company_name"),
       contact_person: formData.get("contact_person"),
       email: formData.get("email"),
@@ -55,11 +68,18 @@ const TeamSettingsPage = () => {
 
     const { error } = await supabase
       .from("invoice_from_default")
-      .upsert({ ...updatedCompany, team_id: teamId });
+      .upsert(
+        { ...updatedCompany, id: company.id, team_id: teamId },
+        { onConflict: "team_id" }
+      );
 
-    if (error) toast.error("Failed to update company info");
-    else toast.success("Company info updated");
+    if (error) {
+      console.log(error.message);
 
+      toast.error("Failed to update company info");
+    } else toast.success("Company info updated");
+
+    setCompany(updatedCompany);
     setLoading(false);
   };
 
@@ -89,7 +109,10 @@ const TeamSettingsPage = () => {
               <Textarea
                 id={field}
                 name={field}
-                defaultValue={company[field]}
+                value={company[field] || ""}
+                onChange={(e) =>
+                  setCompany((prev) => ({ ...prev, [field]: e.target.value }))
+                }
                 className="w-96"
                 rows={3}
               />
@@ -97,7 +120,10 @@ const TeamSettingsPage = () => {
               <Input
                 id={field}
                 name={field}
-                defaultValue={company[field]}
+                value={company[field] || ""}
+                onChange={(e) =>
+                  setCompany((prev) => ({ ...prev, [field]: e.target.value }))
+                }
                 className="w-96"
               />
             )}
