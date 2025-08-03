@@ -13,17 +13,26 @@ import { getInvoices } from "@/data/getDatas";
 import TableActionButton from "@/components/App/Buttons/table-action-button";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function InvoiceTable() {
   const [invoices, setInvoices] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetch = async () => {
-      const data = await getInvoices();
-      setInvoices(data);
+      setIsLoading(true);
+      try {
+        const data = await getInvoices();
+        setInvoices(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetch();
   }, []);
-  if (invoices.length <= 0) {
+  if (invoices.length <= 0 && !isLoading) {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <div className="size-80 flex-col flex items-center justify-center gap-2">
@@ -56,31 +65,40 @@ export default function InvoiceTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invoices.map((invoice) => (
-              <TableRow
-                key={invoice.id}
-                className="*:border-border [&>:not(:last-child)]:border-r"
-              >
-                <TableCell className="py-2 font-medium">
-                  {invoice.due_date}
-                </TableCell>
-                <TableCell className="py-2 text-center">
-                  <Badge variant={invoice.status} className="capitalize">
-                    {invoice.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="py-2">{invoice.customer}</TableCell>
-                <TableCell className="py-2">{invoice.amount}</TableCell>
-                <TableCell className="py-2">{invoice.issue_date}</TableCell>
-                <TableCell className="py-2">{invoice.invoice_no}</TableCell>
-                <TableCell className="py-2 capitalize">
-                  {invoice.recurring}
-                </TableCell>
-                <TableCell className="py-2 text-center">
-                  <TableActionButton table={"invoices"} id={invoice.id} />
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="space-y-2">
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-6 w-full" />
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              invoices.map((invoice) => (
+                <TableRow
+                  key={invoice.id}
+                  className="*:border-border [&>:not(:last-child)]:border-r"
+                >
+                  <TableCell className="py-2 font-medium">
+                    {invoice.due_date}
+                  </TableCell>
+                  <TableCell className="py-2 text-center">
+                    <Badge variant={invoice.status} className="capitalize">
+                      {invoice.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-2">{invoice.customer}</TableCell>
+                  <TableCell className="py-2">{invoice.amount}</TableCell>
+                  <TableCell className="py-2">{invoice.issue_date}</TableCell>
+                  <TableCell className="py-2">{invoice.invoice_no}</TableCell>
+                  <TableCell className="py-2 capitalize">
+                    {invoice.recurring}
+                  </TableCell>
+                  <TableCell className="py-2 text-center">
+                    <TableActionButton table={"invoices"} id={invoice.id} />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

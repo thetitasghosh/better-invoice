@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -12,17 +12,26 @@ import { getCustomers } from "@/data/getDatas";
 import CreateCustomerSheet from "../Sheet/create-customer-sheet";
 import TableActionButton from "@/components/App/Buttons/table-action-button";
 import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CustomerTable() {
   const [customers, setCustomers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     const fetch = async () => {
-      const data = await getCustomers();
-      setCustomers(data);
+      setIsLoading(true);
+      try {
+        const data = await getCustomers();
+        setCustomers(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetch();
   }, []);
-  if (customers.length <= 0) {
+  if (customers.length <= 0 && !isLoading) {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <div className="size-80 flex-col flex items-center justify-center gap-2">
@@ -56,27 +65,36 @@ export default function CustomerTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.map((customer) => (
-              <TableRow
-                key={customer.id}
-                className="*:border-border [&>:not(:last-child)]:border-r"
-              >
-                <TableCell className="py-2 font-medium">
-                  {customer.name}
-                </TableCell>
-                <TableCell className="py-2">
-                  {customer.contact_person}
-                </TableCell>
-                <TableCell className="py-2">{customer.email}</TableCell>
-                <TableCell className="py-2">{customer.phone}</TableCell>
-                <TableCell className="py-2">{customer.website}</TableCell>
-                <TableCell className="py-2">{customer.address}</TableCell>
-                <TableCell className="py-2">{customer.tax_id}</TableCell>
-                <TableCell className="py-2 text-center">
-                  <TableActionButton table={"customers"} id={customer.id} />
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="space-y-2">
+                  <Skeleton className="h-6 w-full" />
+                  <Skeleton className="h-6 w-full" />
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              customers.map((customer) => (
+                <TableRow
+                  key={customer.id}
+                  className="*:border-border [&>:not(:last-child)]:border-r"
+                >
+                  <TableCell className="py-2 font-medium">
+                    {customer.name}
+                  </TableCell>
+                  <TableCell className="py-2">
+                    {customer.contact_person}
+                  </TableCell>
+                  <TableCell className="py-2">{customer.email}</TableCell>
+                  <TableCell className="py-2">{customer.phone}</TableCell>
+                  <TableCell className="py-2">{customer.website}</TableCell>
+                  <TableCell className="py-2">{customer.address}</TableCell>
+                  <TableCell className="py-2">{customer.tax_id}</TableCell>
+                  <TableCell className="py-2 text-center">
+                    <TableActionButton table={"customers"} id={customer.id} />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

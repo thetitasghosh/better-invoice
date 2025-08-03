@@ -7,7 +7,7 @@ import CreateCustomerSheet from "@/components/App/Sheet/create-customer-sheet";
 const TableActionButtonPopover = ({ children, table, id }) => {
   return (
     <Popover>
-      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverTrigger >{children}</PopoverTrigger>
       <PopoverContent
         side="left"
         className="w-full flex flex-col items-center justify-center gap-2 p-2"
